@@ -26,3 +26,17 @@
             --application-pro.properties        正是环境配置
             --application-dev.properties        开发环境配置
             
+            
+   https://github.com/102244653/apiPlatform/blob/main/notes/FF130C2E-4EB0-4376-9822-068927B03AFF.png
+   
+   https://github.com/102244653/apiPlatform/blob/main/notes/A74BED50-6DC0-42D6-A7F3-B52FB81BB6C9.png
+   
+   https://github.com/102244653/apiPlatform/blob/main/notes/A2127BCF-64E2-486F-80F8-8F58F661D53B.png
+   
+   https://github.com/102244653/apiPlatform/blob/main/notes/8630330D-B1D0-416E-9AFE-DBB4157CFAE6.png
+   
+   https://github.com/102244653/apiPlatform/blob/main/notes/6529111B-F3A8-45CA-B7A0-88FE798FDF35.png
+   
+   https://github.com/102244653/apiPlatform/blob/main/notes/54519C25-F9E1-430D-B601-E9CF2EE3E22C.png
+   
+   
