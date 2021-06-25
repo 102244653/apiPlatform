@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>个人中心</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+
+    <link rel="stylesheet" href="layui/css/layui.css"  media="all">
+    <script src="local/jquery.min.js"></script>
+    <script>
+
+    </script>
+    <style type="text/css">
+        #user{
+            margin: 50px auto;
+            width: 1500px;
+            height: 400px;
+            line-height: 200px;
+        }
+    </style>
+</head>
+
+<body class="layui-layout-body">
+<div id="user" class="layui-container" style="text-align: center;">
+
+<form  class="layui-form layui-form-pane" action="javascript:void(0);" lay-filter="user-info">
+
+<!--    <div class="layui-carousel" id="icon">-->
+<!--        <div carousel-item="">-->
+<!--            <div><img src="//static/local/icon/1.png"></div>-->
+<!--            <div><img th:src="@{/static/local/icon/2.png}"></div>-->
+<!--            <div><img th:src="@{/static/local/icon/3.png}"></div>-->
+<!--            <div><img th:src="@{/static/local/icon/4.png}"></div>-->
+<!--            <div><img th:src="@{/static/local/icon/5.png}"></div>-->
+<!--            <div><img th:src="@{/static/local/icon/6.png}"></div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <div class="layui-form-item" >
+        <label class="layui-form-label">用户昵称</label>
+        <div class="layui-input-block">
+            <input type="text" name="username" lay-verify="required" placeholder="请输入用户昵称" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮箱账号</label>
+        <div class="layui-input-block">
+            <input type="text" name="email" readonly lay-verify="required" placeholder="请输入邮箱" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">手机账号</label>
+        <div class="layui-input-block">
+            <input type="text" name="phone" readonly required lay-verify="required" autocomplete="off" placeholder="请输入手机号"
+                   class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">注册平台</label>
+        <div class="layui-input-block">
+        <select name="platform" readonly required lay-verify="required" lay-search>
+            <option value="0">请选择注册平台</option>
+            <option value="1">明峰</option>
+            <option value="2">社区</option>
+        </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">所属部门</label>
+        <div class="layui-input-block">
+        <select name="department" readonly required lay-verify="required" lay-search>
+            <option value="0">请选择部门</option>
+            <option value="1">测试</option>
+            <option value="2">开发</option>
+        </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">账号状态</label>
+        <div class="layui-input-block">
+            <select name="status" readonly required lay-verify="required" lay-search>
+                <option value="1">启用</option>
+                <option value="2">禁用</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">注册时间</label>
+        <div class="layui-input-block">
+            <input type="text" name="createTime" readonly class="layui-input" placeholder="yyyy-MM-dd">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="submit" class="layui-btn" lay-submit="" lay-filter="save">立即提交</button>
+        </div>
+    </div>
+</form>
+</div>
+</body>
+<script src="layui/layui.js" charset="utf-8"></script>
+<script src="https://cdn.jsdelivr.net/npm/jutils-src"></script>
+
+<script>
+    layui.use(['carousel','form','jquery','layer'], function() {
+        var form = layui.form,
+            $ = layui.jquery,
+            carousel = layui.carousel,
+            layer = layui.layer;
+
+        //图片轮播
+        carousel.render({
+            elem: '#icon'
+            ,width: '100px'
+            ,height: '100px'
+        });
+
+        //初始化数据
+        $(function(){
+            let loader = layer.load();
+            $.ajax({
+                url:"/va/userInfo/"+JSON.parse(localStorage.getItem("user")).uid,
+                type: "get",
+                data: {},
+                success:function(res){
+                    layer.close(loader);
+                    if(res.code==0){
+                        var user = res.data;
+                        var date = jutils.formatDate(new Date(user.createTime),"YYYY-MM-DD HH:ii:ss");
+                        form.val("user-info",{
+                            "username":user.userName,
+                            "phone":user.phone,
+                            "email":user.email,
+                            "department":user.department,
+                            "platform":user.platform,
+                            "status":user.status,
+                            "createTime":date
+                        })
+                    }else {
+                        layer.msg(res.msg);
+                    }
+                }
+            });
+        })
+
+        //监听提交
+        form.on('submit(save)', function(data){
+            let loader = layer.load();
+            var user = {
+                "uid":JSON.parse(localStorage.getItem("user")).uid,
+                "userName":data.field.username,
+                "phone":null,
+                "email":null,
+                "password":null,
+                "department":data.field.department,
+                "platform":null,
+                "status":data.field.status,
+                "icon":null,
+                "createTime":null,
+                "loginTime":null
+            }
+            $.ajax({
+                url:"/va/editUser",
+                type:"post",
+                dataType:'json',
+                contentType:"application/json",
+                data: JSON.stringify(user),
+                success:function(res){
+                    layer.close(loader);
+                    if(res.code==0){
+                        var user = res.data;
+                        layer.tipTop("修改成功");
+                        var date = jutils.formatDate(new Date(user.createTime),"YYYY-MM-DD");
+                        form.val("user-info",{
+                            "username":user.userName,
+                            "phone":user.phone,
+                            "email":user.email,
+                            "department":user.department,
+                            "platform":user.platform,
+                            "status":user.status,
+                            "createTime":date
+                        });
+
+                    }
+                }
+            });
+            return false;
+        });
+    })
+</script>
+</html>

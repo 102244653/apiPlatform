@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+    <style type="text/css">
+        #labelId{
+            margin: 50px auto;
+            width: 1500px;
+            height: 400px;
+            line-height: 200px;
+        }
+    </style>
+</head>
+<body>
+
+
+<!--justify-content: space-between;-->
+<div style="display: flex;">
+
+    <form class="layui-form layui-form-pane" id="data-search" action="" style="margin-right: 20px;margin-left: 20px;margin-top: 20px">
+        <div class="layui-form-item" >
+            <div class="layui-inline">
+                <label class="layui-form-label">标签名称:</label>
+                <div class="layui-inline">
+                    <select id="labelId" name="labelId" lay-search>
+                        <option value="0">请选择标签名称</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+
+    <div class="layui-inline" style="margin-top: 20px">
+        <button type="button" id="search_case" class="layui-btn layui-btn-normal"><i class="layui-icon"></i> 搜 索</button>
+    </div>
+
+</div>
+
+<div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief" style="margin-right: 20px;margin-left: 20px;margin-top: 20px">
+    <table class="layui-show" id="flowCaseTable" lay-filter="flowCaseTable" style="width: 80%"></table>
+</div>
+
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑用例</a>
+    <a class="layui-btn layui-btn-xs" lay-event="del">删除用例</a>
+
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="detail">查看用例</a>-->
+</script>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+
+<script type="text/html" id="tabel_status">
+    {{#  if(d.status === 0 ){ }}
+         <p>草稿</p>
+         {{#  } }}  
+         {{#  if(d.status === 1 ){ }}
+         <p>启用</p>
+         {{#  } }}
+</script>
+
+<script type="text/html" id="tabel_method">
+    {{#  if(d.method === 0 ){ }}
+         <p>Post</p>
+         {{#  } }}  
+    {{#  if(d.method === 1 ){ }}
+         <p>Get</p>
+         {{#  } }}
+    {{#  if(d.method === 2 ){ }}
+         <p>Put</p>
+         {{#  } }}
+    {{#  if(d.method === 3 ){ }}
+         <p>Delete</p>
+         {{#  } }}
+</script>
+
+<script>
+
+
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            form = layui.form,
+            table = layui.table;
+
+
+        //初始化数据
+        $.ajax({
+            url:"/va/getUserLabel/"+JSON.parse(localStorage.getItem("user")).uid,
+            async:false,
+            type:"get",
+            success:function(data){
+                var labelList = data.data;
+                for(var i=0;i<labelList.length;i++){
+                    $("#labelId").append("<option value='"+labelList[i].id+"'>"+labelList[i].labelName+"</option>")
+                }
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error:function(){
+                console.log("出错！");
+            }
+        });
+
+        $(function initFlowCase() {
+            var Id = localStorage.labelForm==="null"?0:JSON.parse(localStorage.labelForm).id;
+            console.log(Id)
+            $("#labelId").val(Id);
+            layui.form.render("select");
+            localStorage.setItem("labelForm",null);
+        })
+
+        table.render({
+            elem: "#flowCaseTable",
+            url: '/va/flowCaseList/'+JSON.parse(localStorage.getItem("user")).uid+"/"+$("#labelId").val(),
+            cols: [
+                [
+                {field: 'id', title: 'ID', width: 80, sort: true}
+                ,{field: 'labelId', hide:true, title: '标签Id', minWidth: 10}
+                ,{field: 'labelName', title: '标签名称', minWidth: 200}
+                ,{field: 'KindId', hide:true, title: '模块Id', minWidth: 10}
+                ,{field: 'kindName', title: '模块名称', minWidth: 100}
+                ,{field: 'executeId', title: '执行顺序', width: 110, sort: true}
+                ,{field: 'tag', title: '用例名称', width: 250}
+                ,{field: 'name', title: '接口地址', width: 250}
+                ,{field: 'method', title: '请求方法', width: 100, templet:"#tabel_method"}
+                ,{field: 'status', title: '状态', width: 100, sort: true, templet:"#tabel_status"}
+                ,{field: 'depend', title: '依赖用例ID', width: 120}
+                ,{fixed: 'right', title: '操作栏', toolbar: '#barDemo', width: 200}]
+            ]
+            ,page:true
+            ,id:"flowCaseReload"});
+
+        //监听工具条
+        table.on('tool(flowCaseTable)', function(obj){
+            if(obj.event === 'edit'){
+                var labelJson = {"id":obj.data.labelId, "kindId":obj.data.kindId};
+                localStorage.setItem("labelForm", JSON.stringify(labelJson));
+                layer.open({
+                    type:2,
+                    title:"编辑用例",
+                    area:["1600px", "700px"],
+                    content:"flowCase.html",
+                    success:function(layero, index){
+                        var body = layer.getChildFrame('body', index);
+                        $.ajax({
+                                url: '/va/flowCaseInfo/' + obj.data.id,
+                                async: false,
+                                type: "get",
+                                success: function (result) {
+                                    console.log(result.data.id)
+                                    body.contents().find('#id').val(result.data.id);
+                                    body.contents().find('#tag').val(result.data.tag);
+                                    body.contents().find('#name').val(result.data.name);
+                                    body.contents().find('#method').val(result.data.method);
+                                    body.contents().find('#status').val(result.data.status);
+                                    body.contents().find('#executeId').val(result.data.executeId);
+                                    body.contents().find('#params').val(result.data.params);
+                                    body.contents().find('#depend').val(result.data.depend);
+                                    body.contents().find('#randKey').val(result.data.randKey);
+                                    body.contents().find('#beforeSql').val(result.data.beforeSql);
+                                    body.contents().find('#assertion').val(result.data.assertion);
+                                    body.contents().find('#afterSql').val(result.data.afterSql);
+                                    body.contents().find('#afterDBCheck').val(result.data.afterDBCheck);
+                                    body.contents().find('#back-labelTable').remove();
+                                    form.render();
+                                }
+                            }
+                        );
+
+                    }
+                    ,end:function () {
+                        let currpage = $('.layui-laypage-em').next().text();
+                        table.reload('flowCaseReload', {
+                            page: {
+                                curr: currpage
+                            }
+                        });
+                    }
+                    ,error:function(){
+                        layer.msg("获取用例信息失败");
+                    }
+                });
+            }else if(obj.event === 'del'){
+                $.ajax({
+                    url: '/va/deleteFlowCase/' + obj.data.id+"?uid="+JSON.parse(localStorage.getItem("user")).uid,
+                    async: false,
+                    type: "get",
+                    success: function (result) {
+                        layer.msg(result.msg);
+                        if(result.code == 0){
+                            let currpage = $('.layui-laypage-em').next().text();
+                            table.reload('flowCaseReload', {
+                                page: {
+                                    curr: currpage
+                                }
+                            });
+                        }
+                    }
+                })
+            }
+        });
+
+        $('#search_case').on("click", function () {
+            table.reload("flowCaseReload", {
+                method:"get",
+                url: '/va/flowCaseList/'+JSON.parse(localStorage.getItem("user")).uid+"/"+$("#labelId").val(),
+                page:1
+            })
+        })
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+    });
+
+</script>
+
+</body>
+</html>
+

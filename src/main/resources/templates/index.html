@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>VanTop接口测试平台</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <link rel="stylesheet" href="layui/css/layui.css"  media="all">
+    <script src="local/jquery.min.js"></script>
+
+    <style type="text/css">
+        .first-tab i.layui-tab-close{
+            display:none!important;
+        }
+        .iframe-container{
+            height: 0;
+            padding-bottom: 97.6%;
+            position: relative;
+        }
+        .iframe-container iframe{
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+    </style>
+</head>
+<!--background: url(https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg9.51tietu.net%2Fpic%2F2019-091101%2Ftv3vxjx0egftv3vxjx0egf.jpg&refer=http%3A%2F%2Fimg9.51tietu.net&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1624862633&t=c4ace603b941ad361e82bdab3b3ec752)no-repeat center 0px;background-size:cover;-->
+<body class="layui-layout-body" >
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header" hight="50px" style="opacity:1; color: #93D1FF">
+        <div class="layui-logo" >
+            <strong><p style="color: white" size="20"> VANTOP测试平台 </p></strong>
+        </div>
+
+        <ul class="layui-nav layui-layout-right" >
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="//tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg" class="layui-nav-img">
+                </a>
+            </li>
+            <li class="layui-nav-item">
+                <label th:text="${session.user.userName}"></label>
+            </li>
+            <li class="layui-nav-item">
+                <label  id="platform"></label>
+            </li>
+            <li class="layui-nav-item"><a th:href="@{/logout}">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black" style="opacity:1; width: 200px">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree" lay-filter="menu" >
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">系统设置</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="change('个人中心', 'userDetail')">个人中心</a></dd>
+                        <dd><a href="javascript:;" onclick="change('账号管理', 'accountManage')">账号管理</a></dd>
+                        <dd><a href="javascript:;" onclick="change('环境管理', 'envManage')">环境管理</a></dd>
+                        <dd><a href="javascript:;" onclick="change('参数化规则', 'globalRule')" >参数化规则</a></dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">组合用例</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="change('新增标签','flowLabel')">新增标签</a></dd>
+                        <dd><a href="javascript:;" onclick="change('标签列表','flowLabelList')">标签列表</a></dd>
+                        <dd><a href="javascript:;" onclick="change('用例列表','flowCaseList')">用例列表</a></dd>
+                        <dd><a href="javascript:;" onclick="change('测试报告', 'result')">测试报告</a></dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">接口用例</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="change('添加接口','singleCaseAdd')">添加接口</a></dd>
+                        <dd><a href="javascript:;" onclick="change('用例列表','singleCaseList')">用例列表</a></dd>
+                        <dd><a href="javascript:;" onclick="change('分类管理','singleDirList')">分类管理</a></dd>
+                        <dd><a href="javascript:;" onclick="change('测试报告','result')">测试报告</a></dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">接口更新状态</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="change('更新列表','swaggerList')">更新列表</a></dd>
+                        <dd><a href="javascript:;" onclick="change('同步失败日志','swaggerLog')">同步失败日志</a></dd>
+
+                    </dl>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-tab layui-tab-card" lay-filter="main_content" lay-allowclose="true" style="margin-top:1px;margin-left:201px;width:89%;">
+        <ul class="layui-tab-title" style="opacity:0.8;">
+            <li class="layui-this first-tab" lay-id="main">主页</li>
+        </ul>
+        <div class="layui-tab-content" style="height: 840px">
+            <div class="layui-tab-item layui-show" >
+                <div class="iframe-container">
+                    <iframe src="main.html" style="width: 100%; height: 100%;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<script src="layui/layui.js" charset="utf-8"></script>
+<script>
+
+    //JavaScript代码区域
+    layui.use('element', 'form', function() {
+        var element = layui.element;
+
+    })
+
+    //以上为全局变量 以下为模块加载里面的内容
+    function change(title, content){
+        if(JSON.parse(localStorage.getItem("user")).uid==null){
+            location.href='/login';
+        }else {
+            $.ajax({
+                url: "/va/checkStatus",
+                type: "get",
+                success: function (res) {
+                    if (res.code == 0) {
+                        var tab = $('li[lay-id='+content+']').length;
+                        //indexOf()方法 如果存在目标返回下标 默认为0，不存在返回-1
+                        //因为要实现同一个页面不多次添加，而是如果存在直接切换tab
+                        if (tab == 0) {
+                            layui.element.tabAdd("main_content", {
+                                title: title,
+                                id: content,
+                                content: "<iframe src=\""+content+".html\" style=\"width: 100%; height: 810px;\" scrolling=\"auto\" ></iframe>"
+                            });
+                            layui.element.tabChange("main_content", content);
+
+                        } else {
+                            //刷新页面
+                            if(content == 'flowCase' || content == 'singleCaseAdd'){
+                                return;
+                            }
+                            layui.element.tabChange("main_content", content);
+                            layui.element.on('tab(main_content)', function () {
+                                var src = $(".layui-tab-item.layui-show").find("iframe").attr("src");
+                                $(".layui-tab-item.layui-show").find("iframe").attr("src", src);
+                            });
+                        }
+                    }else {
+                        location.href='/login';
+                    }
+                },
+                error:function () {
+                    location.href='/login';
+                }
+            })
+
+        }
+    }
+    window.change = change;
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+    <style type="text/css">
+        #labeltab{
+            margin: 50px auto;
+            width: 1500px;
+            height: 400px;
+            line-height: 200px;
+        }
+    </style>
+
+</head>
+<body>
+<div id="labeltab" class="layui-container" style="text-align: center;margin-top: 20px;margin-left: 20px;margin-right: 20px">
+
+    <!--新增标签-->
+    <form id="label-from" class="layui-form layui-form-pane" action="javascript:void(0);" lay-filter="label-info">
+
+        <input type="hidden" name="labelId" id="labelId" class="layui-input">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">标签名称:</label>
+            <div class="layui-input-block">
+                <input type="text" name="labelName" id="labelName" required lay-verify="required" placeholder="请输入标签名" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">标签描述:</label>
+            <div class="layui-input-block">
+                <input type="text" name="labelDescription"  id="labelDescription" placeholder="请输入描述" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">模块:</label>
+            <div class="layui-input-block">
+                <select id="kindId" name="kindId" required lay-verify="required" lay-search>
+                    <option value="">请选择所属模块</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">测试账号:</label>
+            <div class="layui-input-block">
+                <select id="accountId" name="accountId" required lay-verify="required" lay-search>
+                    <option value="">请选择测试账号</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态:</label>
+            <div class="layui-input-block">
+                <select id="status" name="status" required lay-verify="required" lay-search>
+                    <option value="0">草稿</option>
+                    <option value="1">启用</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否公开:</label>
+            <div class="layui-input-block">
+                <select id="isOpen" name="isOpen" required lay-verify="required" lay-search>
+                    <option value="0">私有</option>
+                    <option value="1">公开</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="submit" class="layui-btn" lay-submit="" id="label-submit" lay-filter="addlabel">立即提交</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+
+<script>
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            form = layui.form;
+
+        //初始化数据
+        $.ajax({
+            url:"/va/kindList/0",
+            async:false,
+            type:"get",
+            success:function(data){
+                var kindlist = data.data;
+                for(var i=0;i<kindlist.length;i++){
+                    $("#kindId").append("<option value='"+kindlist[i].kindId+"'>"+kindlist[i].kindName+"</option>")
+                }
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error:function(){
+                console.log("加载模块出错！");
+            }
+        });
+
+        $.ajax({
+            url:"/va/getAccount/"+JSON.parse(localStorage.getItem("user")).uid,
+            async:false,
+            type:"get",
+            success:function(data){
+                var accountList = data.data;
+                for(var i=0;i<accountList.length;i++){
+                    $("#accountId").append("<option value='"+accountList[i].id+"'>"+accountList[i].account+"</option>")
+                }
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error:function(){
+                console.log("加载账号出错！");
+            }
+        });
+
+        var labelId = $("#labelId").val();
+
+        form.on('submit(addlabel)', function(data){
+            let loader = layer.load();
+            var label = {
+                "id":labelId == null ? null : labelId,
+                "userId":JSON.parse(localStorage.getItem("user")).uid,
+                "kindId":data.field.kindId,
+                "labelName":data.field.labelName,
+                "labelDescription":data.field.labelDescription,
+                "accountId":data.field.accountId,
+                "status":data.field.status,
+                "isOpen":data.field.isOpen,
+                "createTime":null
+            }
+
+            $.ajax({
+                url:'/va/addLabel',
+                type:"post",
+                dataType:'json',
+                contentType:"application/json",
+                data: JSON.stringify(label),
+                success:function(result){
+                    layer.close(loader);
+                    layer.msg(result.msg);
+                    if(result.msg=='标签添加成功'){
+                        setTimeout("location.reload()",1000);
+                    }
+                },
+                error:function () {
+                    layer.close(loader);
+                    layer.msg("添加失败");
+                }
+            });
+            return false;
+        });
+
+    });
+
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>环境管理</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<!--添加弹窗开始-->
+<form class="layui-form layui-form-pane" id="addwindow" style="display:none;margin-left: 20px;" >
+    <br>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">名称</label>
+        <div class="layui-input-inline" style="width: 320px">
+            <input type="text" name="name" id="name" required  lay-verify="required" placeholder="请输入环境名称" autocomplete="on" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">测试IP地址</label>
+        <div class="layui-input-inline" style="width: 320px">
+            <input type="text" name="urlPre" id="remoteAddress" required  lay-verify="required" placeholder="请输入IP地址[例如:http://172.24.14.70:80]" autocomplete="on" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item" >
+        <label class="layui-form-label">Host域名</label>
+        <div class="layui-input-inline" style="width: 320px">
+            <input type="text" name="urlPre" id="urlPre" required  lay-verify="required" placeholder="请输入Host域名地址[例如:api.nextop.cc]" autocomplete="on" class="layui-input">
+        </div>
+    </div>
+
+</form>
+
+
+<div style="display: flex;margin-top: 20px;margin-left: 20px">
+    <div class="layui-inline">
+        <div class="layui-btn-group demoTable">
+            <button class="layui-btn" type="submit" data-type="addRecord" lay-filter="add">添加环境</button>
+        </div>
+    </div>
+</div>
+<!--添加弹窗结束-->
+
+<div style="margin-left: 20px">
+    <table class="layui-show" id="dataTable" lay-filter="dataTable" style="width: 80%"></table>
+</div>
+
+<script type="text/html" id="platForm">
+    {{#if (d.platForm == 1) { }}
+    <span>明峰</span>
+    {{# }else if(d.platForm == 2){ }}
+    <span>社区</span>
+    {{# }else if(d.platForm == 3){ }}
+    <span>官网</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="status">
+    {{#if (d.status == 1) { }}
+    <span>启用</span>
+    {{# } }}
+    {{#if (d.status == 0) { }}
+    <span>停用</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="barDemo"> 
+    {{#  if(d.status == 0 ){ }}
+         <a class="layui-btn layui-btn-xs" lay-event="on">启用</a>
+    {{#  } }}
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>
+
+
+</script>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            form = layui.form,
+            table = layui.table;
+
+        table.render({
+            elem: "#dataTable",
+            url: '/va/globalList'+"?uid="+JSON.parse(localStorage.getItem("user")).uid,
+            cols: [
+                [
+                    {field: 'id', title: 'ID', width: 100, sort: true}
+                    , {field: 'name', title: '名称', width: 150, edit: 'text'}
+                    , {field: 'platForm', title: '平台', width: 200, templet: "#platForm"}
+                    , {field: 'remoteAddress', title: '测试IP地址', width: 400, edit: 'text'}
+                    , {field: 'urlPre', title: 'Host域名', width: 400, edit: 'text'}
+                    , {field: 'status', title: '状态', width: 200, templet: "#status"}
+                    , {fixed: 'right', title: '操作栏', toolbar: '#barDemo', width: 200}
+                ]
+            ]
+            , page: true
+            , id: 'dataReload'
+        });
+
+
+        //添加按钮
+        var $ = layui.$, active = {
+            addRecord: function(){
+                $("#urlPre").val("");
+                $("#name").val("");
+                $("#remoteAddress").val("");
+                form.render();
+                layer.open({
+                    type:1,
+                    area:['500px','300px'],
+                    title: '添加环境'
+                    ,content: $("#addwindow"),
+                    shade: 0,
+                    btn: ['提交', '取消']
+                    ,btn1: function () {
+                        var loader = layer.load();
+                        var record = {
+                            "id":null,
+                            "uid":JSON.parse(localStorage.getItem("user")).uid,
+                            "platForm":JSON.parse(localStorage.getItem("user")).platform,
+                            "urlPre":$("#urlPre").val(),
+                            "remoteAddress":$("#remoteAddress").val(),
+                            "name":$("#name").val(),
+                            "status":0
+                        }
+                        $.ajax({
+                            url:"/va/addGlobal",
+                            type:"post",
+                            dataType:'json',
+                            contentType:"application/json",
+                            data: JSON.stringify(record),
+                            success:function(result){
+                                layer.close(loader);
+                                if(result.code==0){
+                                    layer.closeAll();
+                                    let currpage = $('.layui-laypage-em').next().text();
+                                    table.reload('dataReload', {
+                                        page: {
+                                            curr: currpage
+                                        }
+                                    });
+                                }
+                                layer.msg(result.msg);
+                            },
+                            error:function (result) {
+                                layer.close(loader);
+                                layer.msg("添加失败");
+                            }
+                        });
+                        return false;
+
+                    },
+                    btn2: function(){
+                        layer.closeAll();
+                        let currpage = $('.layui-laypage-em').next().text();
+                        table.reload('dataReload', {
+                            page: {
+                                curr: currpage
+                            }
+                        });
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+        //添加按钮end
+
+
+        //编辑行数据
+        layui.use('table', function(){
+            var table = layui.table;
+
+            //监听单元格编辑
+            table.on('edit(dataTable)', function(obj){
+                var value = obj.value //得到修改后的值
+                    ,data = obj.data //得到所在行所有键值
+                    ,field = obj.field; //得到字段
+
+                $.ajax({
+                    url: "/va/updateGlobal",
+                    type: "post",
+                    data: {
+                        id: obj.data.id,
+                        field:field,
+                        value:value
+                    },
+                    success: function (result) {
+                        if(result.code==0){
+                            layer.msg('[ID: '+ data.id +'] ' + field + ' 字段更改为：'+ value);
+                            var currpage = $('.layui-laypage-em').next().text();
+                            table.reload('dataReload', {
+                                page: {
+                                    curr: currpage
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        });//编辑行数据
+
+
+        //启用操作
+        table.on('tool(dataTable)', function(obj){
+            if(obj.event == 'on'){
+                $.ajax({
+                    url: "/va/useGlobal"+"?uid="+JSON.parse(localStorage.getItem("user")).uid,
+                    type: "post",
+                    data: {
+                        id: obj.data.id,
+                    },
+                    success: function (result) {
+                        if(result.code==0){
+                            layer.msg("启用成功");
+                            var currpage = $('.layui-laypage-em').next().text();
+                            table.reload('dataReload', {
+                                page: {
+                                    curr: currpage
+                                }
+                            });
+
+                        }else{
+                            layer.msg("启用失败");
+                        }
+                    }
+                });
+            }else if(obj.event=="del"){
+                $.ajax({
+                    url: "/va/delGlobal?id="+obj.data.id+"&uid="+JSON.parse(localStorage.getItem("user")).uid,
+                    type: "get",
+                    data:null,
+                    success: function (result) {
+                        layer.msg(result.msg);
+                        var currpage = $('.layui-laypage-em').next().text();
+
+                        table.reload('dataReload', {
+                            page: {
+                                curr: currpage
+                            }
+                        });
+                    }
+                })
+            }
+        });
+
+
+    });
+
+</script>
+
+</body>
+</html>
+

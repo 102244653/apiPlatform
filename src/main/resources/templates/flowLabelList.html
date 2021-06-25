@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+    <style type="text/css">
+        #labeltab{
+            margin: 50px auto;
+            width: 1500px;
+            height: 400px;
+            line-height: 200px;
+        }
+    </style>
+    <script>
+        function setLabelForm(obj){
+            localStorage.setItem('labelForm',JSON.stringify(obj))
+        }
+        window.setLabelForm = setLabelForm
+    </script>
+</head>
+<body>
+<div style="display: flex;margin-left:10px;margin-top: 20px">
+
+    <form class="layui-form layui-form-pane" id="data-search" action="">
+        <div class="layui-form-item" >
+            <div class="layui-inline">
+                <label class="layui-form-label">模块:</label>
+                <div class="layui-inline">
+                    <select id="kindId" name="kindId" lay-search>
+                        <option value="0">ALL</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-inline" style="float:right">
+                <label class="layui-form-label">标签名称:</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="labelName" id="labelName" autocomplete="off" placeholder="请输入标签名称" class="layui-input" >
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+    <div class="layui-inline" style="margin-right: 20px">
+        <button  id="search_label" class="layui-btn layui-btn-normal"><i class="layui-icon"></i> 搜 索</button>
+    </div>
+
+    <div class="layui-inline" style="margin-right: 20px">
+        <button type="button" id="run-all-case" class="layui-btn layui-btn-danger">一键执行</button>
+    </div>
+
+</div>
+
+
+<div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief" style="margin-left:10px;margin-right: 10px">
+    <table class="layui-show" id="labelTable" lay-filter="labelTable" style="width: 80%"></table>
+</div>
+
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑标签</a>
+    <a class="layui-btn layui-btn-xs" lay-event="detail">用例集合</a>
+    {{#  if(d.status === 0 ){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="add">新增用例</a>
+    <a class="layui-btn layui-btn-xs" lay-event="import">导入用例</a>
+    {{#  } }}
+    {{#  if(d.status === 1 ){ }}
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="runLabel">一键执行</a>
+    {{#  } }}
+</script>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+
+<script type="text/html" id="tabel_status">
+    {{#  if(d.status === 0 ){ }}
+         <p>草稿</p>
+         {{#  } }}  
+         {{#  if(d.status === 1 ){ }}
+         <p>启用</p>
+         {{#  } }}
+</script>
+
+<script type="text/html" id="tabel_isOpen">
+    {{#  if(d.isOpen === 0 ){ }}
+         <p>私有</p>
+         {{#  } }}  
+         {{#  if(d.isOpen === 1 ){ }}
+         <p>公开</p>
+         {{#  } }}
+</script>
+
+<script>
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            form = layui.form,
+            table = layui.table,
+            date = new Date();
+
+            table.render({
+            elem: "#labelTable",
+            url: '/va/labelList/'+JSON.parse(localStorage.getItem("user")).uid+"?kindId=0&labelName=",
+            cols: [
+                [
+                    {field: 'id', title: 'ID', width: 80, sort: true}
+                    ,{field: 'kindName', title: '模块名称', minWidth: 120}
+                    ,{field: 'labelName', title: '标签名称', minWidth: 200}
+                    ,{field: 'labelDescription', title: '标签描述', width: 250}
+                    ,{field: 'accountId', title: '测试账号ID', width: 10, hide: true}
+                    ,{field: 'account', title: '测试账号', width: 180}
+                    ,{field: 'status', title: '状态', width: 100, sort: true, templet:"#tabel_status"}
+                    ,{field: 'isOpen', title: '是否公开', width: 120, sort: true, templet:"#tabel_isOpen"}
+                    ,{field: 'owner', title: '创建人', width: 100}
+                    ,{field: 'createTime', title: '创建时间', width: 180, sort: true}
+                    ,{field: 'userId', title: '用户', width: 10, hide: true}
+                    ,{field: 'kindId', title: '模块ID', minWidth: 10, hide:true}
+                    ,{fixed: 'right', title: '操作栏', toolbar: '#barDemo', width: 320}
+            ]
+            ]
+                ,page:true
+                ,id:"labelReload"
+        });
+
+        //初始化数据
+        $.ajax({
+            url:"/va/kindList/0",
+            async:false,
+            type:"get",
+            success:function(data){
+                var kindlist = data.data;
+                for(var i=0;i<kindlist.length;i++){
+                    $("#kindId").append("<option value='"+kindlist[i].kindId+"'>"+kindlist[i].kindName+"</option>")
+                }
+                $("#kindId").val(0);
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error:function(){
+                console.log("出错！");
+            }
+        });
+
+        //监听工具条
+        table.on('tool(labelTable)', function(obj){
+            if(obj.event === 'edit'){
+                layer.open({
+                    type:2,
+                    title:"编辑标签",
+                    area:["1600px", "550px"],
+                    content:"flowLabel.html",
+                    success:function(layero, index){
+                        var body = layer.getChildFrame('body', index);
+                        // var iframeWin = window[layero.find('iframe')[0]['name']];
+                        //先清空
+                        body.contents().find('#kindId').html('');
+                        body.contents().find('#accountId').html('');
+
+                        body.contents().find('#labelId').val(obj.data.id);
+                        body.contents().find('#labelName').val(obj.data.labelName);
+                        body.contents().find('#labelDescription').val(obj.data.labelDescription);
+                        body.contents().find('#status').val(obj.data.status);
+                        body.contents().find('#isOpen').val(obj.data.isOpen);
+                        body.contents().find('#accountId').val(obj.data.accountId);
+                        form.render();//菜单渲染 把内容加载进去
+
+                    }
+                    ,end:function () {
+                        let currpage = $('.layui-laypage-em').next().text();
+                        table.reload('labelReload', {
+                            page: {
+                                curr: currpage
+                            }
+                        });
+                    }
+                    ,error:function(){
+                        layer.msg("获取标签信息失败");
+                    }
+                });
+            } else if(obj.event === 'add'){
+                setLabelForm(obj.data);
+                //iframe层
+                window.parent.change("用例详情", "flowCase");
+            }else if(obj.event === 'detail'){
+                setLabelForm(obj.data);
+                //iframe层
+                window.parent.change("流程用例列表", "flowCaseList");
+            }else if(obj.event === 'import'){
+                layer.open({
+                    type:2,
+                    title:"用例导入",
+                    area:["1600px", "700px"],
+                    content:"importPage.html",
+                    success:function(layero, index) {
+                        var body = layer.getChildFrame('body', index);
+                        body.contents().find('#labelId').val(obj.data.id);
+                        body.contents().find('#labelName').val(obj.data.labelName);
+                        form.render();
+                    }
+                });
+            }else if(obj.event === 'runLabel'){
+                let loader = layer.open({type:3, content:"<p style='width: 200px' >用例执行中,请稍候...<p>"});
+                var arr = [];
+                arr.push(obj.data.id)
+                $.ajax({
+                    url:"/va/runFlowCaseByLabelId",
+                    type:"POST",
+                    dataType : "json",
+                    contentType: "application/x-www-form-urlencoded;charset=UTF-8",
+                    data: {
+                        uid: null,
+                        userName: JSON.parse(localStorage.getItem("user")).userName,
+                        taskId:"FLOW "+layui.util.toDateString(date.getTime(), 'yyyyMMdd HH:mm:ss')+":"+Math.ceil(Math.random()*100),
+                        labelIds: arr,
+                    },
+                    traditional: true,
+                    success:function(result){
+                        layer.close(loader);
+                        layer.msg(result.msg);
+                    },
+                    error:function () {
+                        layer.close(loader);
+                        layer.msg("执行失败");
+                    }
+                })
+            }
+        });
+
+        $('#search_label').on("click", function () {
+            table.reload("labelReload", {
+                method:"get",
+                url: '/va/labelList/'+JSON.parse(localStorage.getItem("user")).uid+'?kindId='+ $("#kindId").val()+"&labelName="+$("#labelName").val(),
+                page:1
+            })
+        })
+
+        $('#run-all-case').on("click", function () {
+            let loader = layer.open({type:3, content:"<p style='width: 200px' >用例执行中,请稍候...<p>"});
+            var arr = [];
+            $.ajax({
+                url:"/va/runFlowCaseByLabelId",
+                type:"POST",
+                dataType : "json",
+                contentType: "application/x-www-form-urlencoded;charset=UTF-8",
+                data: {
+                    uid:JSON.parse(localStorage.getItem("user")).uid,
+                    userName: JSON.parse(localStorage.getItem("user")).userName,
+                    taskId: date.toLocaleString(),
+                    labelIds: arr,
+                },
+                traditional: true,
+                success:function(result){
+                    layer.close(loader);
+                    layer.msg(result.msg);
+                },
+                error:function () {
+                    layer.close(loader);
+                    layer.msg("执行失败");
+                }
+            })
+        })
+
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+    });
+
+</script>
+
+</body>
+</html>
+

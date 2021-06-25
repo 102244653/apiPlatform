@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="local/login.css" />
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+
+    <link rel="stylesheet" href="layui/css/layui.css"  media="all">
+</head>
+<!-- 代 码 结 构 -->
+<body background="local/imgs/login.svg">
+
+<form class="layui-form" action="javascript:void(0);">
+
+    <div class="layui-form-item">
+        <img class="logo" src="local/imgs/logo.jpg" />
+        <div class="title">VANTOP</div>
+    </div>
+    <div class="layui-form-item">
+        <input type="text" name="username" required lay-verify="required" autocomplete="off" placeholder="请输入用户名"
+               class="layui-input">
+    </div>
+    <div class="layui-form-item">
+        <input type="text" name="email" required lay-verify="email" autocomplete="off" placeholder="请输入邮箱"
+               class="layui-input">
+    </div>
+
+    <div class="layui-form-item">
+        <input type="text" name="phone" required lay-verify="phone" autocomplete="off" placeholder="请输入手机号"
+               class="layui-input">
+    </div>
+
+    <div class="layui-form-item">
+        <input type="text" name="password" required lay-verify="required" autocomplete="off" placeholder="请输入密码"
+               class="layui-input">
+    </div>
+
+    <div class="layui-form-item">
+        <select name="platform" required lay-verify="required" lay-search>
+            <option value="">请选择注册平台</option>
+            <option value="1">明峰</option>
+            <option value="2">社区</option>
+        </select>
+    </div>
+
+    <div class="layui-form-item">
+        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="register">注 册</button>
+    </div>
+
+    <div class="layui-form-item">
+        <layui-text>已有账号，返回 <a th:href="@{/login}" class="layui-bg-orange"> 登录 </a></layui-text>
+    </div>
+
+</form>
+</body>
+<script src="layui/layui.js" charset="utf-8"></script>
+
+<script>
+    layui.use(['form','jquery','layer'], function() {
+        var form = layui.form,
+             $ = layui.jquery,
+             layer = layui.layer;
+
+        form.on('submit(register)', function(data){
+            let loader = layer.load();
+            var date = new Date();
+            var user = {
+                "uid":null,
+                "userName":data.field.username,
+                "phone":data.field.phone,
+                "email":data.field.email,
+                "passWord":data.field.password,
+                "department":0,
+                "platform":data.field.platform,
+                "status":1,
+                "icon":null,
+                "createTime":date.getTime(),
+                "loginTime":""
+            }
+            $.ajax({
+                url:'/va/register',
+                type:"post",
+                dataType:'json',
+                contentType:"application/json",
+                data: JSON.stringify(user),
+                success:function(result){
+                    layer.close(loader);
+                    if(result.code===0){
+                        layer.msg(result.msg);
+                    }
+                }
+            });
+            return false;
+        });
+    })
+</script>
+</body>
+</html>

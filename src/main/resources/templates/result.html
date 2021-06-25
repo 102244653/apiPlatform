@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+
+<script>
+    function setFlowResult(obj){
+        localStorage.setItem('flowResult',JSON.stringify(obj))
+    }
+    window.setFlowResult = setFlowResult
+</script>
+
+<body>
+
+<div style="display: flex;">
+    <form class="layui-form layui-form-pane" style="margin-top: 20px;margin-left: 20px;margin-right: 20px" action="">
+        <div class="layui-form-item" >
+
+            <div class="layui-inline">
+                <label class="layui-form-label">任务类型:</label>
+                <div class="layui-inline">
+                    <select id="taskType" lay-search>
+                        <option value="9">请选择任务类型</option>
+                        <option value="0">混合执行</option>
+                        <option value="1">单接口</option>
+                        <option value="2">组合用例</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">任务名称:</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="taskId" id="taskId" autocomplete="off" placeholder="请输入任务名称" class="layui-input" >
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">测试人员:</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="testUser" id="testUser" autocomplete="on" placeholder="请输入测试人员" class="layui-input" >
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+    <div class="layui-inline" style="margin-top: 20px;float: right">
+        <button type="button" id="search_btn" class="layui-btn layui-btn-normal"><i class="layui-icon"></i> 搜 索</button>
+    </div>
+</div>
+
+<div style="margin-top: 20px;margin-left: 20px;margin-right: 20px">
+    <table class="layui-show" id="resultTable" lay-filter="resultTable" style="width: 80%"></table>
+</div>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+</script>
+
+<script type="text/html" id="runStatus">
+    {{#  if(d.runStatus === 0 ){ }}
+         <p style="color: #FF5722">执行中...</p>
+         {{#  } }}
+    {{#  if(d.runStatus === 1 ){ }}
+         <p>执行完毕</p>
+         {{#  } }}  
+      
+</script>
+
+<script type="text/html" id="taskTypeText">
+    {{#  if(d.taskType == 0 ){ }}
+         <p >混合执行</p>
+         {{#  } }}
+    {{#  if(d.taskType == 1 ){ }}
+         <p>单接口</p>
+         {{#  } }}  
+    {{#  if(d.taskType == 2 ){ }}
+         <p>组合用例</p>
+         {{#  } }}  
+
+</script>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            form = layui.form,
+            table = layui.table;
+
+        table.render({
+            elem: "#resultTable",
+            url: '/va/resultList'+"?taskId="+$("#taskId").val()+"&testUser="+$("#testUser").val()+"&taskType="+$("#taskType").val(),
+            cols: [
+                [
+                    {field: 'id', title: '序号', width: 80, sort: true}
+                    , {field: 'taskId', title: '任务名称', width: 200}
+                    , {field: 'taskType', title: '任务类型', width: 120, templet:"#taskTypeText"}
+                    , {field: 'runStatus', title: '执行状态', width: 120, templet:"#runStatus"}
+                    , {field: 'totalLabel', title: '标签总数', width: 100 }
+                    , {field: 'labelPass', title: '成功标签', width: 100}
+                    , {field: 'labelFail', title: '失败标签', width: 100}
+                    , {field: 'totalCase', title: '用例总数', width: 100}
+                    , {field: 'casePass', title: '成功用例', width: 100}
+                    , {field: 'caseFail', title: '失败用例', width: 100}
+                    , {field: 'logs', title: '失败原因', width: 300}
+                    , {field: 'testUser', title: '测试人员', width: 120}
+                    , {field: 'testTime', title: '测试时间', width: 200, sort: true,
+                    templet : "<div>{{layui.util.toDateString(d.create_time, 'yyyy年MM月dd日 HH:mm:ss')}}</div>"}
+                    ,{fixed: 'right', title: '操作栏', toolbar: '#barDemo', width: 80}
+
+                ]
+            ]
+            , page: true
+            // ,skin:"line"
+            , id: 'dataReload'
+        });
+
+        //监听工具条
+        table.on('tool(resultTable)', function(obj){
+            console.log(obj)
+            if(obj.event === "detail"){
+                setFlowResult(obj.data);
+                //iframe层
+                window.parent.change("报告详情", "report");
+            }
+        })
+
+        //点击搜索后，重新加载表格数据
+        $('#search_btn').on("click", function () {
+            table.reload("dataReload", {
+                method:"get",
+                url: '/va/resultList'+"?taskId="+$("#taskId").val()+"&testUser="+$("#testUser").val()+"&taskType="+$("#taskType").val(),
+                page:1
+            })
+        })
+
+    });
+
+</script>
+
+</body>
+</html>
+

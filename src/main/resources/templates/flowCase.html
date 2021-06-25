@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <script src="local/jquery.min.js"></script>
+    <script>
+        function delItem(node) {
+            $(node).parent("td").parent('tr').remove();
+        }
+
+        function check(obj) {
+            // if(/^[A-Z]+$/.test(obj)){
+            //     return true;
+            // }else{
+            //     return false;
+            // }
+            let int_type = ['caseId', 'type', 'num'];
+            return int_type.includes(obj);
+        }
+    </script>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+    <style type="text/css">
+        #labeltab{
+            margin: 30px auto;
+            width: 1500px;
+            height: 600px;
+            line-height: 100px;
+        }
+    </style>
+</head>
+<body>
+
+<form class="layui-form" style="margin-left: 10px;margin-right: 10px;margin-top: 10px;display:none;" id="runDetail" >
+    <div style="width:100%;text-align:center">
+        <div class="layui-form-item">
+            <label class="layui-form-label">结果:</label>
+            <div class="layui-input-inline" style="width: 660px;">
+                <input type="text" name="result" id="result" readonly autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">请求地址:</label>
+            <div class="layui-input-inline" style="width: 660px;">
+                <input type="text" name="address" id="address" readonly autocomplete="off" class="layui-input">
+            </div>
+
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px;width: 80%">请求参数:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="request" id="request"  readonly style="height: 70px;" placeholder="请输入请求参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">响应结果:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="response" id="response" readonly style="height: 70px" placeholder="请输入请求参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">错误日志:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="errorLog" id="errorLog" readonly style="height: 70px" placeholder="请输入请求参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<div id="labeltab" class="layui-container" style="text-align: center;">
+
+    <!--新增标签-->
+    <form  class="layui-form layui-form-pane" action="javascript:void(0);" lay-filter="flow-case">
+
+        <div class="layui-form-item">
+
+            <label class="layui-form-label">标签名称:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <select id="labelId"  name="labelId" lay-search>
+                    <option value="">请选择标签名称</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+
+            <div class="layui-input-inline" style="width: 300px;">
+                <input type="hidden" name="id" id="id" autocomplete="off" class="layui-input">
+            </div>
+
+            <label class="layui-form-label">用例名称:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <input type="text" name="tag" id="tag" placeholder="请输入用例名称" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+
+            <label class="layui-form-label">接口地址:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <input type="text" name="name" id="name" lay-verify="required" placeholder="请输入接口地址"  autocomplete="off" class="layui-input">
+            </div>
+
+            <label class="layui-form-label">请求方式:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <select id="method" name="method"  lay-verify="required" lay-search>
+                    <option value="0">Post</option>
+                    <option value="1">Get</option>
+                    <option value="2">Put</option>
+                    <option value="3">Delete</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">所属模块:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <select  name="kindId" id="kindId"  lay-verify="required" lay-search>
+                    <option value="">请选择所属模块</option>
+                </select>
+            </div>
+
+            <label class="layui-form-label">用例状态:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <select id="status" name="status"  lay-verify="required" lay-search>
+                    <option value="0">草稿</option>
+                    <option value="1">启用</option>
+                </select>
+            </div>
+
+            <label class="layui-form-label">执行顺序:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <input type="text" name="executeId" id="executeId" required lay-verify="number" placeholder="请输入描述" autocomplete="off" class="layui-input">
+            </div>
+
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">请求参数:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="params" id="params" lay-verify="required" style="height: 70px;width: 1250px" placeholder="请输入请求参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+            <div class="layui-form-label" style="display:flex; align-items:flex-end;float: right;margin-top: -70px;height: 70px">
+                <button id="mock" class="layui-btn layui-btn-sm layui-btn-danger">mock参数</button>
+            </div>
+
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">依赖用例:
+<!--                </br>-->
+<!--                <layui-text id="depend-tips" class="layui-bg-orange">示例</layui-text>-->
+            </label>
+            <div class="layui-input-block">
+                <textarea type="text" name="depend" id="depend" style="height: 70px" placeholder="请输入依赖用例参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">自定义参数:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="randKey" id="randKey" style="height: 70px" placeholder="请输入随机字段参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">前置SQL:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="beforeSql" id="beforeSql" style="height: 70px" placeholder="请输入前置SQL参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">结果断言:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="assertion" id="assertion" lay-verify="required" style="height: 70px" placeholder="请输入结果断言参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">其他断言:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="afterDBCheck" id="afterDBCheck"  style="height: 70px" placeholder="请输入其他断言参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">后置SQL:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="afterSql" id="afterSql" style="height: 70px" placeholder="请输入后置SQL" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+
+
+        <div class="layui-input-block">
+<!--            <button type="button" id="run-flowCase" class="layui-btn layui-btn-danger" >调 试</button>-->
+            <button type="submit" class="layui-btn" lay-submit="" lay-filter="addFlowCase">立即提交</button>
+            <button type="button" id="back-labelTable" class="layui-btn" >返 回</button>
+        </div>
+
+
+    </form>
+
+
+
+</div>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+
+<script>
+
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            table = layui.table,
+            form = layui.form;
+
+        //初始化数据
+        $.ajax({
+            url:"/va/getUserLabel/"+JSON.parse(localStorage.getItem("user")).uid,
+            async:false,
+            type:"get",
+            success:function(data){
+                var labelList = data.data;
+                for(var i=0;i<labelList.length;i++){
+                    $("#labelId").append("<option value='"+labelList[i].id+"'>"+labelList[i].labelName+"</option>")
+                }
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error:function(){
+                console.log("出错！");
+            }
+        });
+
+        //初始化数据
+        $.ajax({
+            url:"/va/kindList/0",
+            async:false,
+            type:"get",
+            success:function(data){
+                var kindlist = data.data;
+                for(var i=0;i<kindlist.length;i++){
+                    $("#kindId").append("<option value='"+kindlist[i].kindId+"'>"+kindlist[i].kindName+"</option>")
+                }
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error:function(){
+                console.log("加载模块出错！");
+            }
+        });
+
+        //设置跳转过来labelId
+        $(
+            function () {
+                var label = localStorage.labelForm=="null"?0:JSON.parse(localStorage.labelForm).id;
+                var kind = localStorage.labelForm=="null"?0:JSON.parse(localStorage.labelForm).kindId;
+
+                $("#labelId").val(label);
+                $("#kindId").val(kind);
+                form.render("select");
+                localStorage.setItem("labelForm",null);
+            }
+        )
+
+        form.on('submit(addFlowCase)', function(data){
+            let loader = layer.load();
+            //console.log(form.val("flow-case"))
+            var flowCase = {
+                "id":parseInt(data.field.id),
+                "labelId":parseInt(data.field.labelId),
+                "tag":data.field.tag,
+                "labelName":$("#labelId option:selected").text(),
+                "name":data.field.name,
+                "method":parseInt(data.field.method),
+                "status":parseInt(data.field.status),
+                "kindId":parseInt(data.field.kindId),
+                "kindName":"",
+                "executeId":parseInt(data.field.executeId),
+                "params":data.field.params,
+                "depend":data.field.depend,
+                "randKey":data.field.randKey,
+                "beforeSql":data.field.beforeSql,
+                "response":null,
+                "assertion":data.field.assertion,
+                "afterSql":data.field.afterSql,
+                "afterDBCheck":data.field.afterDBCheck
+            }
+            $.ajax({
+                url:'/va/addFlowCase',
+                type:"post",
+                dataType:'json',
+                contentType:"application/json",
+                data: JSON.stringify(flowCase),
+                success:function(result){
+                    layer.close(loader);
+                    layer.msg(result.msg);
+                },
+                error:function () {
+                    layer.close(loader);
+                    layer.msg("添加用例失败");
+                }
+            });
+            return false;
+        });
+
+        $('#back-labelTable').on("click", function () {
+            window.parent.change("业务标签列表","flowLabelList");
+        })
+
+        $('#mock').on("click", function () {
+
+            $.ajax({
+                url:'/va/readMockParams?method='+$("#method  option:selected").text()+"&name="+$("#name").val(),
+                type:"get",
+                success:function(result){
+                    if(result.data ==null){
+                        layer.msg("接口地址或请求方式错误！");
+                    }else {
+                        $("#params").html('');
+                        $("#params").val(result.data.params);
+                        form.render();
+                    }
+                },
+                error:function () {
+                    layer.msg("获取mock参数失败");
+                }
+            });
+        })
+
+        $('#depend-tips').on("click", function () {
+            layer.open({
+                type: 1,
+                area: ['300px', '100px'],
+                skin: 'layui-layer-demo', //样式类名
+                closeBtn: 0, //不显示关闭按钮
+                anim: 2,
+                shadeClose: true, //开启遮罩关闭
+                content: '内容'
+            });
+        })
+
+        // $('#run-flowCase').on("click", function () {
+        //     layer.open({
+        //         type:1,
+        //         area:['800px','450px'],
+        //         title: '请求结果'
+        //         ,content: $("#runDetail")
+        //         ,yes: function(){
+        //             layer.closeAll();
+        //         }
+        //     });
+        // })
+
+    });
+
+</script>
+
+</body>
+</html>
+

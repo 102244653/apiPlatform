@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>VanTop接口测试平台</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <link rel="stylesheet" href="layui/css/layui.css"  media="all">
+    <script src="local/jquery.min.js"></script>
+    <script>
+        function change(title){
+            if(JSON.parse(localStorage.getItem("user")).uid==null){
+                location.href='/login';
+            }else {
+                $.ajax({
+                    url: "/va/checkStatus/",
+                    type: "get",
+                    success: function (res) {
+                        if (res.code == 0) {
+                            $('iframe').attr('src', title + ".html");
+                        }else {
+                            location.href='/login';
+                        }
+                    },
+                    error:function () {
+                        location.href='/login';
+                    }
+                })
+            }
+        }
+        window.change = change
+    </script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header" hight="100">
+        <div class="layui-logo" >
+            <strong><p color="blue" size="20"> VANTOP测试平台 </p></strong>
+        </div>
+
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="//tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg" class="layui-nav-img">
+                </a>
+            </li>
+            <li class="layui-nav-item">
+                <label th:text="${session.user.userName}"></label>
+            </li>
+            <li class="layui-nav-item">
+                <label  id="platform"></label>
+            </li>
+            <li class="layui-nav-item"><a th:href="@{/logout}">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree">
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">系统设置</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="change('userDetail')">个人中心</a></dd>
+                        <dd><a href="javascript:;" onclick="change('accountManage')">账号管理</a></dd>
+                        <dd><a href="javascript:;" onclick="change('envManage')">环境管理</a></dd>
+                        <dd><a href="javascript:;" onclick="change('globalRule')">参数化规则</a></dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">业务流程用例</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="change('flowLabel')">新增标签</a></dd>
+                        <dd><a href="javascript:;" onclick="change('flowLabelList')">标签列表</a></dd>
+                        <dd><a href="javascript:;" onclick="change('flowCaseList')">用例列表</a></dd>
+                        <dd><a href="javascript:;" onclick="change('flowReport')">测试报告</a></dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">单场景用例</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="change('singleCaseAdd')">添加接口</a></dd>
+                        <dd><a href="javascript:;" onclick="change('singleCaseList')">用例列表</a></dd>
+                        <dd><a href="javascript:;" onclick="change('singleDirList')">分类管理</a></dd>
+                        <dd><a href="javascript:;" onclick="change('singleReportList')">执行日志</a></dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">接口更新状态</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="change('swaggerList')">更新列表</a></dd>
+                        <dd><a href="javascript:;" onclick="change('swaggerLog')">同步失败日志</a></dd>
+
+                    </dl>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body" >
+        <div style="padding: 5px;margin-left: 5px;margin-top: 5px;margin-right: 5px;margin-bottom: 5px">
+            <iframe src="main.html" frameborder="0" id="demoAdmin" style="width: 98%; height: 800px;"></iframe>
+        </div>
+    </div>
+
+
+</div>
+<script src="layui/layui.js" charset="utf-8"></script>
+<script>
+    //JavaScript代码区域
+    layui.use('element', 'form', function(){
+        var element = layui.element;
+        var name = localStorage.getItem("user").anchor("userName");
+        var pl = localStorage.getItem("user").anchor("platform");
+        function setName(name){
+            $('#id').value(name);
+            if(pf === 1){
+                $('#platform').value("【明峰】");
+            }
+            if(pf === 2){
+                $('#platform').value("【互联网】");
+            }
+
+        }
+    });
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="local/login.css" />
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+
+    <link rel="stylesheet" href="layui/css/layui.css"  media="all">
+</head>
+<!-- 代 码 结 构 -->
+<body background="local/imgs/login.svg">
+<form class="layui-form" action="javascript:void(0);">
+    <div class="layui-form-item">
+        <img class="logo" src="local/imgs/logo.jpg" />
+        <div class="title">VANTOP</div>
+        <div class="desc">
+            接 口 测 试 平 台
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <input name="username" type="text" placeholder="请输入邮箱或手机号" value="" hover class="layui-input"  />
+    </div>
+    <div class="layui-form-item">
+        <input name="password" type="password" placeholder="请输入密码" value="" hover class="layui-input"  />
+    </div>
+
+    <div class="layui-form-item">
+        <input type="checkbox" name="remember-me" title="记住账号" lay-skin="primary" checked>
+        <a th:href="@{/register}"  style="float:right;margin-top: 10px" >注 册</a>
+    </div>
+
+    <div class="layui-form-item">
+        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="login">登 录</button>
+    </div>
+
+</form>
+<script src="layui/layui.js" charset="utf-8"></script>
+
+<script>
+    layui.use('form', function(){
+        var form = layui.form,
+            $ = layui.jquery,
+            layer = layui.layer;
+
+        //监听提交
+        form.on('submit(login)', function(data){
+            let loader = layer.load();
+            $.ajax({
+                url:"/va/login",
+                type: "post",
+                data: {
+                    account: data.field.username,
+                    password: data.field.password,
+                },
+                success:function(result){
+                    layer.close(loader);
+                    layer.msg(result.msg);
+                    if(result.code==0){
+                        localStorage.setItem('user', JSON.stringify(result.data));
+                        localStorage.setItem("labelForm",null);
+                        location.href = '/index';
+                    }
+                }
+            });
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

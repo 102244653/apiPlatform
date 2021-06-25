@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>单场景用例</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<!--添加弹窗-->
+<form class="layui-form" id="addwindow" style="display:none;" >
+    <br>
+    <div class="layui-form-item">
+        <label class="layui-form-label">模块</label>
+        <div class="layui-inline">
+            <select id="kind2" name="kind2" lay-filter="selectkind" lay-search>
+                <option value="0">请选择模块</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">分类</label>
+        <div class="layui-input-inline">
+            <input type="text" name="dirName" id="dirName" required lay-verify="required" placeholder="" autocomplete="on" class="layui-input">
+        </div>
+    </div>
+</form>
+
+
+<div style="display: flex;justify-content: space-between;">
+    <form class="layui-form" action="" style="margin-right: 20px;margin-left: 20px;margin-top: 20px">
+        <div class="form-group">
+            <div class="layui-form-item">
+
+                <div class="layui-inline">
+                    <select id="kind" name="kind" lay-filter="selectkind" lay-search>
+                        <option value="0">请选择模块</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+    </form>
+
+    <div class="layui-inline" style="margin-top: 20px;margin-right: 20px">
+        <button style="text-align: right" id="search_btn" class="layui-btn layui-btn-normal"><i class="layui-icon"></i>搜 索</button>
+        <div class="layui-btn-group demoTable">
+            <button class="layui-btn" type="submit" data-type="addRecord" lay-filter="add">添加分类</button>
+        </div>
+    </div>
+
+</div>
+
+<div style="margin-right: 20px;margin-left: 20px;margin-top: 20px">
+    <table class="layui-show" id="dataTable" lay-filter="dataTable" style="width: 80%"></table>
+
+</div>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="run">执行</a>
+</script>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            form = layui.form,
+            table = layui.table;
+
+        table.render({
+            elem: "#dataTable",
+            url: '/va/singleDirList?kind='+ $("#kind").val(),
+            cols: [
+                [
+                    {field: 'kindDirId', title: 'ID', width: 100, sort: true}
+                    , {field: 'kindName', title: '模块', width: 150}
+                    , {field: 'dirName', title: '分类', width: 1405, edit: 'text'}
+                    , {fixed: 'right', title: '操作栏', toolbar: '#barDemo', width: 150}
+                ]
+            ]
+            , page: true
+            , id: 'dataReload'
+        });
+
+        //模块下拉
+        $.ajax({
+            url: "/va/kindList/0",
+            async: false,
+            type: "get",
+            success: function (data) {
+                console.log(data);
+                var kindlist = data.data;
+                for (var i = 0; i < kindlist.length; i++) {
+                    $("#kind").append("<option value='" + kindlist[i].kindId + "'>" + kindlist[i].kindName + "</option>")
+                    $("#kind2").append("<option value='" + kindlist[i].kindId + "'>" + kindlist[i].kindName + "</option>")
+                }
+                $("#kind").val(0);
+                $("#kind2").val(0);
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error: function () {
+                console.log("出错！");
+            }
+        });
+
+        //点击搜索后，重新加载表格数据
+        $('#search_btn').on("click", function () {
+            table.reload("dataReload", {
+                method:"get",
+                url: '/va/singleDirList?kind='+ $("#kind").val(),
+                page:1
+            })
+        })
+
+        //添加按钮
+        var $ = layui.$, active = {
+            addRecord: function(){
+                layer.open({
+                    type:1,
+                    area:['500px','500px'],
+                    title: '添加'
+                    ,content: $("#addwindow"),
+                    shade: 0,
+                    btn: ['提交', '取消']
+                    ,btn1: function () {
+                        var loader = layer.load();
+                        var record = {
+                            "kindId":$("#kind2").val(),
+                            "kindDirId":null,
+                            "dirName":$("#dirName").val(),
+                            "kindName":null
+                        }
+                        $.ajax({
+                            url:'/va/addDir',
+                            type:"post",
+                            dataType:'json',
+                            contentType:"application/json",
+                            data: JSON.stringify(record),
+                            success:function(result){
+                                layer.close(loader);
+                                if(result.code===0){
+                                    layer.closeAll();
+                                    location.href='/singleDirList';
+                                }
+                                layer.msg(result.msg);
+                            },
+                            error:function (result) {
+                                layer.close(loader);
+                                layer.msg("添加失败");
+                            }
+                        });
+                        return false;
+
+                    },
+                    btn2: function(){
+                        layer.closeAll();
+                    }
+                    // cancel: function(){
+                    //     layer.closeAll();
+                    // }
+
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+        //添加按钮end
+
+
+        //编辑行数据
+        layui.use('table', function(){
+            var table = layui.table;
+
+            //监听单元格编辑
+            table.on('edit(dataTable)', function(obj){
+                var value = obj.value //得到修改后的值
+                    ,data = obj.data //得到所在行所有键值
+                    ,field = obj.field; //得到字段
+                layer.msg('[ID: '+ data.kindDirId +'] ' + field + ' 字段更改为：'+ value);
+
+                $.ajax({
+                    url: "/va/updateSingleDir",
+                    type: "post",
+                    data: {
+                        kindDirId: obj.data.kindDirId,
+                        field:field,
+                        value:value
+                    },
+                    success: function (result) {
+                        if(result.code==0){
+                            var currpage = $('.layui-laypage-em').next().text();
+                            table.reload('dataReload', {
+                                page: {
+                                    curr: currpage
+                                }
+                            });
+                        }
+                    }
+                });
+
+            });
+        });
+
+
+        //批量执行
+        table.on('tool(dataTable)', function(obj){
+            var data = obj.data;
+            if(obj.event == 'run'){
+                let loader = layer.open({type:3, content:"执行中..."});
+                $.ajax({
+                    url: "/va/runBatch"+"?uid="+JSON.parse(localStorage.getItem("user")).uid+"&kindDirId="+ data.kindDirId,
+                    type: "post",
+                    data: {
+                        id: obj.data.id,
+                    },
+                    success: function (result) {
+                        layer.close(loader);
+                        layer.msg(result.msg);
+                        if(result.code==0){
+                            var currpage = $('.layui-laypage-em').next().text();
+                            table.reload('dataReload', {
+                                page: {
+                                    curr: currpage
+                                }
+                            });
+
+                        }
+
+                    }
+                });
+            }
+        });
+
+
+    });
+
+</script>
+
+</body>
+</html>
+

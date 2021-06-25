@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>添加接口</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+
+    <link rel="stylesheet" href="layui/css/layui.css"  media="all">
+    <script src="local/jquery.min.js"></script>
+    <script>
+
+    </script>
+    <style type="text/css">
+        #user{
+            margin: 50px auto;
+            width: 1500px;
+            height: 400px;
+            line-height: 200px;
+        }
+    </style>
+</head>
+
+<body class="layui-layout-body">
+<div id="user" class="layui-container" style="text-align: center;">
+
+<form  class="layui-form layui-form-pane" action="javascript:void(0);" lay-filter="user-info">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">模块</label>
+        <div class="layui-input-block">
+            <select id="kindName" name="kindName" lay-verify="required" lay-filter="selectkind" lay-search>
+                <option value="0">请选择模块</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">分类</label>
+        <div class="layui-input-block">
+            <select id="kindDirId" name="kindDirId">
+                <option value="0">请选择分类</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">请求方式</label>
+        <div class="layui-input-block">
+            <select name="method" readonly required lay-verify="required" lay-search>
+                <option value="0">Post</option>
+                <option value="1">Get</option>
+                <option value="2">Put</option>
+                <option value="3">Delete</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item" >
+        <label class="layui-form-label">接口名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="tag" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">接口地址</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">请求参数</label>
+        <div class="layui-input-block">
+            <input type="text" name="params"  placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">自定义参数</label>
+        <div class="layui-input-block">
+            <input type="text" name="randKey" placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">前置Sql</label>
+        <div class="layui-input-block">
+            <input type="text" name="beforeSql" placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">Res断言</label>
+        <div class="layui-input-block">
+            <input type="text" name="assertion" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">Sql断言</label>
+        <div class="layui-input-block">
+            <input type="text" name="afterDBCheck" placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">后置Sql</label>
+        <div class="layui-input-block">
+            <input type="text" name="afterSql" placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="submit" class="layui-btn" lay-submit="" lay-filter="save">立即提交</button>
+        </div>
+    </div>
+</form>
+</div>
+</body>
+<script src="layui/layui.js" charset="utf-8"></script>
+<script src="https://cdn.jsdelivr.net/npm/jutils-src"></script>
+
+<script>
+    layui.use(['form','jquery','layer'], function() {
+        var form = layui.form,
+            $ = layui.jquery,
+            layer = layui.layer;
+
+        //自定义验证规则
+        form.verify({
+        });
+
+        //模块下拉
+        $.ajax({
+            url: "/va/kindList/0",
+            async: false,
+            type: "get",
+            success: function (data) {
+                var kindlist = data.data;
+                for (var i = 0; i < kindlist.length; i++) {
+                    $("#kindName").append("<option value='" + kindlist[i].kindId + "'>" + kindlist[i].kindName + "</option>")
+                }
+                $("#kindName").val(0);
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error: function () {
+                console.log("出错！");
+            }
+        });
+
+        //分类下拉
+        form.on('select(selectkind)', function (data) {
+            $("#kindDirId").empty();
+            $.ajax({
+                url: '/va/dirList/' + $("#kindName").val(),
+                async: false,
+                type: "get",
+                success: function (data) {
+                    var dirList = data.data;
+                    for (var i = 0; i < dirList.length; i++) {
+                        $("#kindDirId").append("<option value='" + dirList[i].kindDirId + "'>" + dirList[i].dirName + "</option>")
+                    }
+                    $("#kindDirId").val(0);
+                    form.render();//菜单渲染 把内容加载进去
+                }
+            });
+        });
+
+        //监听提交
+        form.on('submit(save)', function(data){
+            var loader = layer.load();
+            var singleCase = {
+                "id":null,
+                "kindDirId":data.field.kindDirId==""?0:data.field.kindDirId,
+                "method":data.field.method,
+                "tag":data.field.tag,
+                "name":data.field.name,
+                "params":data.field.params,
+                "randKey":data.field.randKey,
+                "beforeSql":data.field.beforeSql,
+                "assertion":data.field.assertion,
+                "afterDBCheck":data.field.afterDBCheck,
+                "afterSql":data.field.afterSql
+            }
+            $.ajax({
+                url:"/va/addSingleCase",
+                type:"post",
+                dataType:'json',
+                contentType:"application/json",
+                data: JSON.stringify(singleCase),
+                success:function(res){
+                    layer.close(loader);
+                    layer.msg(res.msg);
+                    if(res.msg=="添加成功！"){
+                        setTimeout("location.reload()", 1000);
+                    }
+                }
+            });
+            return false;
+        });
+    })
+</script>
+</html>

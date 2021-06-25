@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <script src="local/jquery.min.js"></script>
+    <script>
+        function delItem(node) {
+            $(node).parent("td").parent('tr').remove();
+        }
+
+        function check(obj) {
+            // if(/^[A-Z]+$/.test(obj)){
+            //     return true;
+            // }else{
+            //     return false;
+            // }
+            let int_type = ['caseId', 'type', 'num'];
+            return int_type.includes(obj);
+        }
+    </script>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+    <style type="text/css">
+        #labeltab{
+            margin: 50px auto;
+            width: 1500px;
+            height: 400px;
+            line-height: 200px;
+        }
+    </style>
+</head>
+<body>
+<div id="labeltab" class="layui-container" style="text-align: center;">
+
+    <!--新增标签-->
+    <form  class="layui-form layui-form-pane" action="javascript:void(0);">
+
+        <div class="layui-form-item" >
+            <div class="layui-input-inline">
+                <input type="hidden" name="labelId" id="labelId"  readonly autocomplete="off" class="layui-input">
+            </div>
+
+            <label class="layui-form-label">标签名称:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <input type="text" name="labelName" id="labelName" readonly autocomplete="off" class="layui-input">
+            </div>
+
+        </div>
+
+        <div class="layui-form-item">
+
+            <label class="layui-form-label">用例名称:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <input type="text" name="tag" placeholder="请输入用例名称" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+
+            <label class="layui-form-label">接口地址:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <input type="text" name="name"  lay-verify="required" placeholder="请输入接口地址"  autocomplete="off" class="layui-input">
+            </div>
+
+            <label class="layui-form-label">请求方式:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <select id="method" name="method"  lay-verify="required" lay-search>
+                    <option value="0">Post</option>
+                    <option value="1">Get</option>
+                    <option value="2">Put</option>
+                    <option value="3">Delete</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">所属模块:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <select  name="kindId" id="kindId"  lay-verify="required" lay-search>
+                    <option value="">请选择所属模块</option>
+                </select>
+            </div>
+
+            <label class="layui-form-label">用例状态:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <select id="status" name="status"  lay-verify="required" lay-search>
+                    <option value="0">草稿</option>
+                    <option value="1">启用</option>
+                </select>
+            </div>
+
+            <label class="layui-form-label">执行顺序:</label>
+            <div class="layui-input-inline" style="width: 300px;">
+                <input type="text" name="executeId"  required lay-verify="number" placeholder="请输入描述" autocomplete="off" class="layui-input">
+            </div>
+
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 70px">请求参数:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="params" lay-verify="required" style="height: 70px" placeholder="请输入请求参数" autocomplete="off" class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="layui-form-label" style="width: 1470px; text-align: left">依赖参数:</span>
+            <table class="layui-table" id="depend_table" name="depend">
+                <colgroup>
+                    <col width="150">
+                    <col width="150">
+                    <col width="150">
+                    <col width="50">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>处理字段</th>
+                    <th>用例ID</th>
+                    <th>取值字段</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><input type="text" placeholder="请输入参数化字段path"  class="layui-input"></td>
+                    <td><input type="text" placeholder="请输入用例ID" class="layui-input"></td>
+                    <td><input type="text" placeholder="请输入取值字段path"  class="layui-input"></td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs" id="addDepend"> 新增 </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="layui-form-label" style="width: 1470px; text-align: left">自定义参数:</span>
+            <table class="layui-table" id="randKey_table" name="randkey">
+                <colgroup>
+                    <col width="150">
+                    <col width="150">
+                    <col width="150">
+                    <col width="50">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>处理字段</th>
+                    <th>数据类型</th>
+                    <th>参数长度</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><input type="text" placeholder="请输入参数化字段path"  class="layui-input"></td>
+                    <td>
+                        <select name="para-type" lay-search>
+                            <option value="">请选择参数类型</option>
+                            <option value="1">整数</option>
+                            <option value="2">字符串</option>
+                            <option value="3">时间</option>
+                        </select>
+                    </td>
+                    <td><input type="text" placeholder="请设置参数长度"  class="layui-input"></td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs" id="addRandKey"> 新增 </button>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">前置SQL:</label>
+            <div class="layui-input-block">
+                <input type="text" name="beforeSql"   placeholder="请输入前置SQL" autocomplete="off" class="layui-input">
+            </div>
+            <table class="layui-table" id="before_sql_table" name="before-sql">
+                <colgroup>
+                    <col width="215">
+                    <col width="215">
+                    <col width="50">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>处理字段</th>
+                    <th>结果字段</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><input type="text" placeholder="请输入参数化字段path"  class="layui-input"></td>
+                    <td><input type="text" placeholder="请输入取值化字段path"  class="layui-input"></td>
+
+                    <td>
+                        <button class="layui-btn layui-btn-xs" id="addBeforeSql"> 新增 </button>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="layui-form-label" style="width: 1470px; text-align: left">结果断言:</span>
+            <table class="layui-table" id="assertion_table" name="assertion">
+                <colgroup>
+                    <col width="150">
+                    <col width="150">
+                    <col width="150">
+                    <col width="50">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>处理字段</th>
+                    <th>数据类型</th>
+                    <th>参数长度</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><input type="text" placeholder="请设置实际结果" required class="layui-input"></td>
+                    <td>
+                        <select name="assert-type1" lay-verify="required" lay-search>
+                            <option value="">请选择比较类型</option>
+                            <option value="equals">等于</option>
+                            <option value="start">以*开始</option>
+                            <option value="end">以*结束</option>
+                            <option value="contains">包含</option>
+                        </select>
+                    </td>
+                    <td><input type="text" placeholder="请设置预期结果" required lay-verify="number" class="layui-input"></td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs" id="addAssertion"> 新增 </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+<!--        <div class="layui-form-item">-->
+<!--            <span class="layui-form-label" style="width: 1470px; text-align: left">其他断言:</span>-->
+<!--            <table class="layui-table" id="other_table" name="other-assert">-->
+<!--                <colgroup>-->
+<!--                    <col width="150">-->
+<!--                    <col width="150">-->
+<!--                    <col width="150">-->
+<!--                    <col width="50">-->
+<!--                </colgroup>-->
+<!--                <thead>-->
+<!--                <tr>-->
+<!--                    <th>实际结果</th>-->
+<!--                    <th>比较类型</th>-->
+<!--                    <th>预期结果</th>-->
+<!--                    <th>操作</th>-->
+<!--                </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                <tr>-->
+<!--                    <td><input type="text" placeholder="请设置实际结果"  class="layui-input"></td>-->
+<!--                    <td>-->
+<!--                        <select name="assert-type2" lay-search>-->
+<!--                            <option value="">请选择比较类型</option>-->
+<!--                            <option value="equals">等于</option>-->
+<!--                            <option value="start">以*开始</option>-->
+<!--                            <option value="end">以*结束</option>-->
+<!--                            <option value="contains">包含</option>-->
+<!--                        </select>-->
+<!--                    </td>-->
+<!--                    <td><input type="text" placeholder="请设置预期结果" class="layui-input"></td>-->
+<!--                    <td>-->
+<!--                        <button class="layui-btn layui-btn-xs" id="addOther"> 新增 </button>-->
+<!--                    </td>-->
+
+<!--                </tr>-->
+<!--                </tbody>-->
+<!--            </table>-->
+<!--        </div>-->
+
+        <div class="layui-form-item">
+            <span class="layui-form-label" style="width: 1470px; text-align: left">后置SQL:</span>
+            <table class="layui-table" id="after_sql_table" name="after-sql">
+                <colgroup>
+                    <col width="88%">
+                    <col width="12%">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>SQL</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><input type="text" placeholder="请输入SQL" class="layui-input"></td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs" id="addAfterSql"> 新增 </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="submit" class="layui-btn" lay-submit="" lay-filter="addFlowCase">立即提交</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+
+<script>
+
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            table = layui.table,
+            form = layui.form;
+
+        //设置跳转过来labelId
+        $(
+            function () {
+                var lf = localStorage.getItem("labelForm");
+                var labelForm0 = JSON.parse(lf);
+                $("#labelId").val(labelForm0.id);
+                $("#labelName").val(labelForm0.labelName);
+                form.render();
+                localStorage.setItem('labelForm',null)
+            }
+        )
+
+        //初始化数据
+        $.ajax({
+            url:"/va/kindList/0",
+            async:false,
+            type:"get",
+            success:function(data){
+                var kindlist = data.data;
+                for(var i=0;i<kindlist.length;i++){
+                    $("#kindId").append("<option value='"+kindlist[i].kindId+"'>"+kindlist[i].kindName+"</option>")
+                }
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error:function(){
+                console.log("加载模块出错！");
+            }
+        });
+
+        function readTable(tableId, obj) {
+            var depends = [];
+            var tb = document.getElementById(tableId);
+            var rows = tb.rows;
+            var i = 1;
+            for(i;i<rows.length;i++) {    //--循环所有的行
+                var cells = rows[i].cells;
+                var rowValue = {};
+                var isNotNull = 0;
+                for(var k=0;k<obj.length;k++){
+                    var text = $.trim(cells[k].childNodes[0].value);
+                    if(text.toString().length!=null){
+                        isNotNull++;
+                    }
+                    if(check(obj[k])){
+                        //true为int
+                        rowValue[obj[k]] = parseInt(text);
+                    }else {
+                        //false为str
+                        rowValue[obj[k]] = text;
+                    }
+                }
+                if(isNotNull!=0){
+                    return null;
+                }
+                depends.push(rowValue);
+            }
+            return depends;
+        }
+
+        function readAfterSql() {
+            var after = [];
+            var tb = document.getElementById("after_sql_table");
+            var rows = tb.rows;
+            var i = 1;
+            for(i;i<rows.length;i++) {    //--循环所有的行
+                var cells = rows[i].cells;
+                var text = cells[0].childNodes[0].value;
+                if($.trim(text).length!=0){
+                    after.push(text);
+                }
+            }
+            return after;
+        }
+
+
+        $("#addDepend").on("click",function () {
+            var html = "<tr>\n" +
+                "                    <td><input type=\"text\" placeholder=\"请输入自定义参数\" required class=\"layui-input\"></td>\n" +
+                "                    <td><input type=\"text\" placeholder=\"请输入用例ID\" required lay-verify=\"number\" class=\"layui-input\"></td>\n" +
+                "                    <td><input type=\"text\" placeholder=\"请设置参数长度\" required lay-verify=\"number\" class=\"layui-input\"></td>\n" +
+                "                    <td>\n" +
+                "                        <button class=\"layui-btn layui-btn-xs\" onclick=\"delItem(this)\"> 删除 </button>\n" +
+                "                    </td>\n" +
+                "                </tr>";
+            $("#depend_table").append(html);
+        });
+
+        $("#addRandKey").on("click",function () {
+            var html = "<tr>\n" +
+                "                    <td><input type=\"text\" placeholder=\"请输入自定义参数\" required class=\"layui-input\"></td>\n" +
+                "                    <td>\n" +
+                "                        <select lay-verify=\"required\" lay-search=\"\">\n" +
+                "                            <option value=\"\">请选择参数类型</option>\n" +
+                "                            <option value=\"1\">整数</option>\n" +
+                "                            <option value=\"2\">字符串</option>\n" +
+                "                            <option value=\"3\">时间</option>\n" +
+                "                        </select>" +
+                "                       <div class=\"layui-form-select\">" +
+                "                           <div class=\"layui-select-title\">" +
+                "                           <input type=\"text\" placeholder=\"请选择参数类型\" value=\"\" class=\"layui-input\">" +
+                "                           <i class=\"layui-edge\"></i>" +
+                "                       </div>" +
+                "                       <dl class=\"layui-anim layui-anim-upbit\">" +
+                "                           <dd lay-value=\"\" class=\"layui-select-tips\">请选择参数类型</dd>" +
+                "                           <dd lay-value=\"1\" class=\"\">整数</dd>" +
+                "                           <dd lay-value=\"2\" class=\"\">字符串</dd>" +
+                "                           <dd lay-value=\"3\" class=\"\">时间</dd>" +
+                "                       </dl>" +
+                "                       </div>" +
+                "                    </td>"+
+                "                    <td><input type=\"text\" placeholder=\"请设置参数长度\" required lay-verify=\"number\" class=\"layui-input\"></td>\n" +
+                "                    <td><button class=\"layui-btn layui-btn-xs\" onclick='delItem(this)'> 删除 </button></td>\n" +
+                "                </tr>";
+            $("#randKey_table").append(html);
+            form.render("select");
+            console.log(readTable("randKey_table", ['path', 'type', 'num']))
+        });
+
+        $("#addBeforeSql").on("click",function () {
+            var html = "<tr>" +
+                "                    <td><input type=\"text\" placeholder=\"请输入处理字段\" required class=\"layui-input\"></td>" +
+                "                    <td><input type=\"text\" placeholder=\"请输入结果字段\" required class=\"layui-input\"></td>" +
+                "                    <td>" +
+                "                        <button class=\"layui-btn layui-btn-xs\" onclick='delItem(this)'> 删除 </button>" +
+                "                    </td>" +
+                "                </tr>";
+            $("#before_sql_table").append(html);
+        });
+
+        $("#addAssertion").on("click",function () {
+            var html = "<tr>" +
+                "                    <td><input type=\"text\" placeholder=\"请设置实际结果\" required class=\"layui-input\"></td>" +
+                "                    <td>\n" +
+                "                        <select lay-search=\"\">\n" +
+                "                            <option value=\"\">请选择比较类型</option>\n" +
+                "                            <option value=\"equals\">等于</option>\n" +
+                "                            <option value=\"start\">以*开始</option>\n" +
+                "                            <option value=\"end\">以*结束</option>\n" +
+                "                            <option value=\"contains\">包含</option>\n" +
+                "                        </select><div class=\"layui-form-select\"><div class=\"layui-select-title\"><input type=\"text\" placeholder=\"请选择比较类型\" value=\"\" class=\"layui-input\"><i class=\"layui-edge\"></i></div><dl class=\"layui-anim layui-anim-upbit\"><dd lay-value=\"\" class=\"layui-select-tips\">请选择比较类型</dd><dd lay-value=\"equals\" class=\"\">等于</dd><dd lay-value=\"start\" class=\"\">以*开始</dd><dd lay-value=\"end\" class=\"\">以*结束</dd><dd lay-value=\"contains\" class=\"\">包含</dd></dl></div>\n" +
+                "                    </td>\n" +
+                "                    <td><input type=\"text\" placeholder=\"请设置预期结果\" required lay-verify=\"number\" class=\"layui-input\"></td>" +
+                "                    <td>" +
+                "                        <button class=\"layui-btn layui-btn-xs\" id=\"add\" onclick='delItem(this)'> 删除 </button>" +
+                "                    </td>" +
+                "                </tr>";
+            $("#assertion_table").append(html);
+            form.render("select");
+
+        });
+
+        // $("#addOther").on("click",function () {
+        //     var html = "<tr>\n" +
+        //         "                    <td><input type=\"text\" placeholder=\"请设置实际结果\" required class=\"layui-input\"></td>\n" +
+        //         "                    <td>\n" +
+        //         "                        <select lay-search=\"\">\n" +
+        //         "                            <option value=\"\">请选择比较类型</option>\n" +
+        //         "                            <option value=\"equals\">等于</option>\n" +
+        //         "                            <option value=\"start\">以*开始</option>\n" +
+        //         "                            <option value=\"end\">以*结束</option>\n" +
+        //         "                            <option value=\"contains\">包含</option>\n" +
+        //         "                        </select><div class=\"layui-form-select\"><div class=\"layui-select-title\"><input type=\"text\" placeholder=\"请选择比较类型\" value=\"\" class=\"layui-input\"><i class=\"layui-edge\"></i></div><dl class=\"layui-anim layui-anim-upbit\"><dd lay-value=\"\" class=\"layui-select-tips\">请选择比较类型</dd><dd lay-value=\"equals\" class=\"\">等于</dd><dd lay-value=\"start\" class=\"\">以*开始</dd><dd lay-value=\"end\" class=\"\">以*结束</dd><dd lay-value=\"contains\" class=\"\">包含</dd></dl></div>\n" +
+        //         "                    </td>\n" +
+        //         "                    <td><input type=\"text\" placeholder=\"请设置预期结果\" required lay-verify=\"number\" class=\"layui-input\"></td>\n" +
+        //         "                    <td>\n" +
+        //         "                        <button class=\"layui-btn layui-btn-xs\" onclick='delItem(this)'> 删除 </button>\n" +
+        //         "                    </td>\n" +
+        //         "\n" +
+        //         "                </tr>";
+        //     $("#other_table").append(html);
+        //     form.render("select");
+        //
+        // });
+
+        $("#addAfterSql").on("click",function () {
+            var html = "<tr>\n" +
+                "                    <td><input type=\"text\" placeholder=\"请输入SQL\" required class=\"layui-input\"></td>\n" +
+                "                    <td>\n" +
+                "                        <button class=\"layui-btn layui-btn-xs\" onclick='delItem(this)'> 删除 </button>\n" +
+                "                    </td>\n" +
+                "                </tr>";
+            $("#after_sql_table").append(html);
+        });
+
+        form.on('submit(addFlowCase)', function(data){
+            console.log(data)
+            let loader = layer.load();
+            // layer.alert("请检查数据是否全部填写！");
+
+            var dependValue = readTable("depend_table", ['path', 'caseId', 'value0']);
+            var randKeyValue = readTable("randKey_table", ['path', 'type', 'num']);
+            var beforeSqlValue = readTable("before_sql_table", ['path', 'key']);
+            var assertionValue = readTable("assertion_table", ['path', 'value0', 'checkType']);
+            var afterSqlValue = readAfterSql("after_sql_table");
+            // var afterCheckValue = readTable("other_table", ['path', 'key', 'checkType']);
+            console.log("dependValue: "+dependValue)
+            console.log("randKeyValue: "+randKeyValue)
+            console.log("beforeSqlValue: "+beforeSqlValue)
+            console.log("assertionValue: "+assertionValue)
+            console.log("afterSqlValue: "+afterSqlValue)
+
+            var flowCase = {
+                "id":null,
+                "labelId":data.field.labelId,
+                "tag":data.field.tag,
+                "labelName":data.field.labelName,
+                "name":data.field.name,
+                "method":data.field.method,
+                "status":data.field.status,
+                "kindDirId":data.field.kindDirId,
+                "kindDirName":data.field.kindDirName,
+                "executeId":data.field.executeId,
+                "params":data.field.params,
+                "depend":{"depends":JSON.parse(dependValue)},
+                "randKey":{"randKeys":JSON.parse(randKeyValue)},
+                "beforeSql":{"sqls":[{"sql":data.field.beforeSql,"paths":[JSON.parse(beforeSqlValue)]}]},
+                "response":null,
+                "assertion":{"assertion":JSON.parse(assertionValue)},
+                "afterSql":{"sqls":JSON.parse(afterSqlValue)},
+                "afterCheck":""
+            }
+            console.log(flowCase)
+            $.ajax({
+                url:'/va/addLabel',
+                type:"post",
+                dataType:'json',
+                contentType:"application/json",
+                data: JSON.stringify(label),
+                success:function(result){
+                    layer.close(loader);
+                    layer.msg(result.msg);
+                    // if(result.msg == "标签添加成功"){
+                    //     alert()
+                    // }
+
+                },
+                error:function () {
+                    layer.close(loader);
+                    layer.msg("添加失败");
+                }
+            });
+            return false;
+        });
+
+    });
+
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+
+<form class="layui-form" id="addwindow" style="display:none;margin-left: 20px;margin-top: 20px;margin-right: 20px" >
+    <div style="width:100%;text-align:center">
+
+    <br>
+    <div class="layui-form-item">
+        <label class="layui-form-label">账号</label>
+        <div class="layui-input-inline">
+            <input type="text" name="account" id="account" required  lay-verify="required" placeholder="请输入账号" autocomplete="on" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码</label>
+        <div class="layui-input-inline">
+            <input type="text" name="password" id="password" required lay-verify="required" placeholder="请输入密码" autocomplete="on" class="layui-input">
+        </div>
+<!--        <div class="layui-form-mid layui-word-aux">辅助文字</div>-->
+    </div>
+    </div>
+</form>
+
+<div class="layui-btn-group demoTable" style="margin-left: 20px;margin-top: 20px">
+    <button class="layui-btn" type="submit" data-type="addaccount" lay-filter="add">添加账号</button>
+</div>
+<div style="margin-left: 20px;margin-right: 20px">
+    <table class="layui-show" id="dataTable" lay-filter="dataTable" style="width: 80%"></table>
+
+</div>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="login">测试</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+{{#  if(d.isDefault == 0 ){ }}
+     <a class="layui-btn layui-btn-xs" lay-event="on">启用</a>
+{{#  } }}
+
+</script>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+
+<script type="text/html" id="platform">
+    {{#  if(d.platform === 1 ){ }}
+         <p>明峰</p>
+         {{#  } }}  
+         {{#  if(d.platform === 2 ){ }}
+         <p>互联网</p>
+         {{#  } }}
+</script>
+
+<script type="text/html" id="isDefault">
+    {{#  if(d.isDefault === 1 ){ }}
+         <p>是</p>
+    {{#  } }}  
+    {{#  if(d.isDefault === 0 ){ }}
+         <p>否</p>
+    {{#  } }}  
+</script>
+
+
+<script>
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            table = layui.table;
+
+            table.render({
+            elem: "#dataTable",
+            url: '/va/accountList/'+JSON.parse(localStorage.getItem("user")).uid,
+            cols: [
+                [
+                {field: 'id', title: 'ID', width: 100, sort: true}
+                // ,{field: 'uid', title: '用户ID', width: 200}
+                ,{field: 'platform', title: '平台', minWidth: 150, templet:"#platform"}
+                ,{field: 'account', title: '账号', minWidth: 200}
+                ,{field: 'password', title: '密码', width: 200}
+                ,{field: 'loginDetail', title: 'token', width: 400}
+                ,{field: 'cookie', title: 'cookie', width: 400}
+                ,{field: 'isDefault', title: '默认', width: 100, sort: true, templet:"#isDefault"}
+                ,{fixed: 'right', title: '操作栏', toolbar: '#barDemo', width: 200}
+            ]
+            ]
+                ,page:true
+                ,id:"dataReload"
+        });
+
+        //监听工具条
+        table.on('tool(dataTable)', function(obj){
+            if(obj.event === 'del'){
+                let loader = layer.load();
+                $.ajax({
+                    url: "/va/deleteAccount/" + obj.data.id,
+                    type: "get",
+                    data: {},
+                    success: function (result) {
+                        layer.close(loader);
+                        if(result.code==0){
+                            let currpage = $('.layui-laypage-em').next().text();
+
+                            table.reload('dataReload', {
+                                page: {
+                                    curr: currpage
+                                }
+                            });
+                        }
+                        layer.msg(result.msg);
+                    }
+                });
+            } else if(obj.event === 'on'){
+                $.ajax({
+                    url: "/va/setDefault"+"?uid="+JSON.parse(localStorage.getItem("user")).uid,
+                    type: "post",
+                    data: {
+                        id: obj.data.id,
+                    },
+                    success: function (result) {
+                        if(result.code==0){
+                            var currpage = $('.layui-laypage-em').next().text();
+                            table.reload('dataReload', {
+                                page: {
+                                    curr: currpage
+                                }
+                            });
+                            layer.msg("执行完成");
+                        }else{
+                            layer.msg("执行中断");
+                        }
+                    }
+                });
+            }else if(obj.event=="login"){
+                $.ajax({
+                    url: "/va/loginAccount?id="+obj.data.id+"&uid="+JSON.parse(localStorage.getItem("user")).uid,
+                    type: "get",
+                    success: function (result) {
+                        layer.msg(result.msg);
+                        var currpage = $('.layui-laypage-em').next().text();
+
+                        table.reload('dataReload', {
+                            page: {
+                                curr: currpage
+                            }
+                        });
+                    }
+                })
+            }
+        });
+
+        var $ = layui.$, active = {
+            addaccount: function(){
+                layer.open({
+                    type:1,
+                    area:['400px','300px'],
+                    title: '添加账号'
+                    ,content: $("#addwindow"),
+                    shade: 0,
+                    btn: ['提交', '取消']
+                    ,btn1: function () {
+                        let loader = layer.load();
+                        var account = {
+                            "id":null,
+                            "uid":JSON.parse(localStorage.getItem("user")).uid,
+                            "account":$("#account").val(),
+                            "password":$("#password").val(),
+                            "platform":JSON.parse(localStorage.getItem("user")).platform,
+                            "loginDetail":null,
+                            "cookie":null,
+                            "isDefault":0
+                        }
+                        $.ajax({
+                            url:'/va/addAccount',
+                            type:"post",
+                            dataType:'json',
+                            contentType:"application/json",
+                            data: JSON.stringify(account),
+                            success:function(result){
+                                layer.close(loader);
+                                if(result.code===0){
+                                    layer.closeAll();
+                                    table.reload('dataReload', {
+                                        page: {
+                                            curr: 1
+                                        }
+                                    });
+                                }
+                                layer.msg(result.msg);
+                            },
+                            error:function (result) {
+                                layer.close(loader);
+                                layer.msg("添加失败");
+                            }
+                        });
+                        return false;
+
+                    },
+                    btn2: function(){
+                        layer.closeAll();
+                    }
+
+                });
+            }
+
+        };
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+
+    });
+
+</script>
+
+</body>
+</html>
+

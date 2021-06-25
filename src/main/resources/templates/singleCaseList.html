@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>单场景用例</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<form class="layui-form" style="margin-left: 10px;margin-right: 10px;margin-top: 10px;display:none;" lay-filter="example" id="runDetail" >
+    <div style="width:100%;text-align:center">
+        <div class="layui-form-item">
+            <label class="layui-form-label">结果:</label>
+            <div class="layui-input-inline" style="width: 660px;">
+                <input type="text" name="result" id="result" readonly autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">请求地址:</label>
+            <div class="layui-input-inline" style="width: 660px;">
+                <input type="text" name="address" id="address" readonly autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" >请求参数:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="request" id="request"  readonly style="height: 70px;width: 660px;"  class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" >响应结果:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="response" id="response" readonly style="height: 70px;width: 660px;" class="layui-input"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" >错误日志:</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="errorLog" id="errorLog" readonly style="height: 70px;width: 660px;" class="layui-input"></textarea>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div style="display: flex;justify-content: space-between;" >
+    <form class="layui-form" action="" style="margin-right: 20px;margin-left: 20px;margin-top: 20px">
+        <div class="form-group">
+            <div class="layui-form-item">
+
+                <div class="layui-inline">
+                    <select id="kind" name="kind" lay-filter="selectkind" lay-search>
+                        <option value="0">请选择模块</option>
+                    </select>
+                </div>
+
+                <div class="layui-inline">
+                    <select id="kind2" name="kind2">
+                        <option value="0">请选择分类</option>
+                    </select>
+                </div>
+
+                <div class="layui-inline">
+                    <select id="runSelect" name="runSelect">
+                        <option value="100">请选择执行状态</option>
+                        <option value="0">未执行</option>
+                        <option value="1">成功</option>
+                        <option value="2">失败</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+    </form>
+    <div class="layui-inline" style="margin-right: 20px;margin-left: 20px;margin-top: 20px">
+        <button style="text-align: right" id="search_btn" class="layui-btn layui-btn-normal"><i class="layui-icon"></i>搜 索</button>
+        <button style="text-align: right" id="mock_btn" class="layui-btn layui-btn-normal"><i class="layui-icon"></i>Mock</button>
+    </div>
+</div>
+
+<div style="margin-right: 20px;margin-left: 20px;margin-top: 20px">
+    <table class="layui-show" id="dataTable" lay-filter="dataTable" style="width: 80%"></table>
+
+</div>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="run">执行</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    <a class="layui-btn layui-btn-xs" lay-event="copy">复制</a>
+</script>
+
+<script type="text/html" id="method">
+    {{#if (d.method == '0') { }}
+    <span>Post</span>
+    {{# }else if(d.method == '1'){ }}
+    <span>Get</span>
+    {{# }else if(d.method == '2'){ }}
+    <span>Put</span>
+    {{# }else if(d.method == '3'){ }}
+    <span>Delete</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="status">
+    {{#if (d.status == '0') { }}
+    <span>手动添加</span>
+    {{# }else if(d.status == '1'){ }}
+    <span>自动同步</span>
+    {{# }else if(d.status == '2'){ }}
+    <span>已执行</span>
+    {{# }else if(d.status == '3'){ }}
+    <span>已变更</span>
+    {{# }else if(d.status == '4'){ }}
+    <span>已编辑</span>
+    {{# }else if(d.status == '5'){ }}
+    <span>响应结果变更</span>
+    {{# }else if(d.status == '6'){ }}
+    <span>请求参数变更</span>
+    {{# }else if(d.status == '7'){ }}
+    <span>请求参数，响应结果变更</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="runStatus">
+    {{#if (d.runStatus == '0') { }}
+    <span>未执行</span>
+    {{# }else if(d.runStatus == '1'){ }}
+    <span>通过</span>
+    {{# }else if(d.runStatus == '2'){ }}
+    <span>失败</span>
+    {{# } }}
+</script>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+
+
+<div class="layui-row" id="popUpdateTest" style="display:none;">
+    <div class="layui-col-md10">
+        <form class="layui-form layui-from-pane" action="" style="margin-top:20px" >
+
+            <div class="layui-form-item" >
+                <label class="layui-form-label">ID</label>
+                <div class="layui-input-block">
+                    <input type="text"  id="id" name="id" lay-verify="required" placeholder="" autocomplete="off" class="layui-input" readonly>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">模块</label>
+                <div class="layui-input-block">
+                    <select id="kindName" name="kindName" lay-verify="required" lay-filter="selectkind" lay-search>
+                        <option value="0">请选择模块</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类</label>
+                <div class="layui-input-block">
+                    <select id="kindDirId" name="kindDirId" readonly required lay-verify="required" lay-search>
+                        <option value="0">请选择分类</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">请求方式</label>
+                <div class="layui-input-block">
+                    <select id="method2" name="method" readonly required lay-verify="required" lay-search>
+                        <option value="0">Post</option>
+                        <option value="1">Get</option>
+                        <option value="2">Put</option>
+                        <option value="3">Delete</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item" >
+                <label class="layui-form-label">接口名称</label>
+                <div class="layui-input-block">
+                    <input type="text"  id="tag" name="tag" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">接口地址</label>
+                <div class="layui-input-block">
+                    <input type="text" id="name" name="name" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">请求参数</label>
+                <div class="layui-input-block">
+                    <input type="text" id="params" name="params" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">自定义参数</label>
+                <div class="layui-input-block">
+                    <input type="text" id="randKey" name="randKey" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">前置Sql</label>
+                <div class="layui-input-block">
+                    <input type="text" id="beforeSql" name="beforeSql" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">Res断言</label>
+                <div class="layui-input-block">
+                    <input type="text" id="assertion" name="assertion" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">Sql断言</label>
+                <div class="layui-input-block">
+                    <input type="text" id="afterDBCheck" name="afterDBCheck" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">后置Sql</label>
+                <div class="layui-input-block">
+                    <input type="text" id="afterSql" name="afterSql" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button type="submit" class="layui-btn" lay-submit="" lay-filter="save">立即提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="layui-row" id="copy_page" style="display:none;margin-right: 20px;margin-left: 20px">
+    <div class="layui-col-md10">
+        <form class="layui-form layui-from-pane" action="" style="margin-top:20px" >
+
+            <div class="layui-form-item" >
+                <label class="layui-form-label">ID</label>
+                <div class="layui-input-block">
+                    <input type="text"  id="id3" name="id" lay-verify="required" placeholder="" autocomplete="off" class="layui-input" readonly>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">模块</label>
+                <div class="layui-input-block">
+                    <select id="kindName3" name="kindName" lay-verify="required" lay-filter="selectkind" lay-search>
+                        <option value="0">请选择模块</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类</label>
+                <div class="layui-input-block">
+                    <select id="kindDirId3" name="kindDirId" readonly required lay-verify="required" lay-search>
+                        <option value="0">请选择分类</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">请求方式</label>
+                <div class="layui-input-block">
+                    <select id="method3" name="method" readonly required lay-verify="required" lay-search>
+                        <option value="0">Post</option>
+                        <option value="1">Get</option>
+                        <option value="2">Put</option>
+                        <option value="3">Delete</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item" >
+                <label class="layui-form-label">接口名称</label>
+                <div class="layui-input-block">
+                    <input type="text"  id="tag3" name="tag" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">接口地址</label>
+                <div class="layui-input-block">
+                    <input type="text" id="name3" name="name" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">请求参数</label>
+                <div class="layui-input-block">
+                    <input type="text" id="params3" name="params" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">自定义参数</label>
+                <div class="layui-input-block">
+                    <input type="text" id="randKey3" name="randKey" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">前置Sql</label>
+                <div class="layui-input-block">
+                    <input type="text" id="beforeSql3" name="beforeSql" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">Res断言</label>
+                <div class="layui-input-block">
+                    <input type="text" id="assertion3" name="assertion" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">Sql断言</label>
+                <div class="layui-input-block">
+                    <input type="text" id="afterDBCheck3" name="afterDBCheck" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">后置Sql</label>
+                <div class="layui-input-block">
+                    <input type="text" id="afterSql3" name="afterSql" placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button type="submit" class="layui-btn" lay-submit="" lay-filter="copy">立即提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            form = layui.form,
+            table = layui.table;
+
+        table.render({
+            elem: "#dataTable",
+            url: '/va/singleCaseList?kind='+ $("#kind").val()+'&kind2='+ $("#kind2").val()+"&runStatus="+$("#runSelect").val(),
+            cols: [
+                [
+                    {field: 'id', title: 'ID', width: 100, sort: true}
+                    , {field: 'tag', title: '接口名称', width: 150, edit: 'text'}
+                    , {field: 'method', title: '请求方式', width: 100, templet: "#method", edit: 'text'}
+                    , {field: 'status', title: '编辑状态', width: 100, sort: true, templet: "#status"}
+                    , {field: 'runStatus', title: '执行状态', width: 100, sort: true, templet: "#runStatus"}
+                    , {field: 'name', title: '接口地址', width: 200, edit: 'text'}
+                    , {field: 'params', title: '请求参数', width: 400, edit: 'text'}
+                    , {field: 'assertion', title: 'Response断言', width: 200, edit: 'text'}
+                    , {field: 'randKey', title: '自定义参数', width: 200, edit: 'text'}
+                    , {field: 'beforeSql', title: '前置Sql', width: 200, edit: 'text'}
+                    , {field: 'afterDBCheck', title: 'Sql断言', width: 200, edit: 'text'}
+                    , {field: 'afterSql', title: '后置Sql', width: 200, edit: 'text'}
+                    , {fixed: 'right', title: '操作栏', toolbar: '#barDemo', width: 220}
+                ]
+            ]
+            , page: true
+            // ,skin:"line"
+            , id: 'dataReload'
+        });
+
+        //模块下拉
+        $.ajax({
+            url: "/va/kindList/0",
+            async: false,
+            type: "get",
+            success: function (data) {
+                console.log(data);
+                var kindlist = data.data;
+                for (var i = 0; i < kindlist.length; i++) {
+                    $("#kind").append("<option value='" + kindlist[i].kindId + "'>" + kindlist[i].kindName + "</option>")
+                }
+                $("#kind").val(0);
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error: function () {
+                console.log("出错！");
+            }
+        });
+
+        //分类下拉
+        form.on('select(selectkind)', function (data) {
+            $("#kind2").empty();
+            $.ajax({
+                url: '/va/dirList/' + $("#kind").val(),
+                async: false,
+                type: "get",
+                success: function (data) {
+                    var dirList = data.data;
+                    for (var i = 0; i < dirList.length; i++) {
+                        $("#kind2").append("<option value='" + dirList[i].kindDirId + "'>" + dirList[i].dirName + "</option>")
+                    }
+                    $("#kind2").val(0);
+                    form.render();//菜单渲染 把内容加载进去
+                }
+            });
+        });
+
+        //点击搜索后，重新加载表格数据
+        $('#search_btn').on("click", function () {
+            var kind2 = $("#kind2").val();
+            if(kind2 == null){
+                kind2 = 0;
+            }
+            table.reload("dataReload", {
+                method:"get",
+                url: '/va/singleCaseList?kind='+ $("#kind").val()+'&kind2='+ kind2+"&runStatus="+$("#runSelect").val(),
+                page:1
+            })
+        })
+
+        //mock
+        $('#mock_btn').on("click", function () {
+            layer.confirm('确定Mock该分类？', function(index){
+                $.ajax({
+                    url: "/va/mockDir",
+                    type: "post",
+                    data: {
+                        kindDirId: $("#kind2").val(),
+                    },
+                    success: function (result) {
+                        layer.close(index);
+                        if(result.code==0){
+                            var currpage = $('.layui-laypage-em').next().text();
+                            table.reload('dataReload', {
+                                page: {
+                                    curr: currpage
+                                }
+                            });
+                        }
+                        layer.msg(result.msg);
+                    }
+                });
+            });
+        })
+
+        //监听行工具事件
+        table.on('tool(dataTable)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'del'){
+                layer.confirm('确认删除？', function(index){
+                    // obj.del();
+                    // layer.close(index);
+                    $.ajax({
+                        url: "/va/deleteSingleCase",
+                        type: "post",
+                        data: {
+                            id: obj.data.id,
+                        },
+                        success: function (result) {
+                            layer.close(index);
+                            if(result.code==0){
+                                var currpage = $('.layui-laypage-em').next().text();
+                                table.reload('dataReload', {
+                                    page: {
+                                        curr: currpage
+                                    }
+                                });
+                            }
+                            layer.msg("删除成功");
+                        }
+                    });
+                });
+            }else if(obj.event == 'run'){
+                $.ajax({
+                    url: "/va/runSingleCase"+"?uid="+JSON.parse(localStorage.getItem("user")).uid,
+                    type: "post",
+                    data: {
+                        id: obj.data.id,
+                    },
+                    success: function (result) {
+                        var data = result.data;
+                        $("#result").val(data.result);
+                        $("#address").val(data.address);
+                        $("#response").val(data.response);
+                        $("#request").val(data.request);
+                        $("#errLog").val(data.errorLog);
+
+                        layer.open({
+                            type:1,
+                            area:['800px','450px'],
+                            title: '执行结果'
+                            ,content: $("#runDetail")
+                            ,yes: function(){
+                                layer.closeAll();
+                            }
+                        });
+                        var currpage = $('.layui-laypage-em').next().text();
+                        table.reload('dataReload', {
+                            page: {
+                                curr: currpage
+                            }
+                        });
+                    }
+                });
+            }
+            else if(obj.event == 'edit'){
+                layer.open({
+                    //layer提供了5种层类型。可传入的值有：0（信息框，默认）1（页面层）2（iframe层）3（加载层）4（tips层）
+                    type: 1,
+                    title: "修改",
+                    area: ['800px', '800px'],
+                    content: $("#popUpdateTest"),
+                    success: function (layero, index) {
+                        $.ajax({
+                            url: "/va/kindList/0",
+                            async: false,
+                            type: "get",
+                            success: function (data) {
+                                // console.log('aaaa',data)
+                                var kindlist = data.data;
+                                for (var i = 0; i < kindlist.length; i++) {
+                                    $("#kindName").append("<option value='" + kindlist[i].kindId + "'>" + kindlist[i].kindName + "</option>")
+                                }
+                                form.render();//菜单渲染 把内容加载进去
+                                var kindId = parseInt(obj.data.kindDirId/100)
+                                $.ajax({
+                                    url: '/va/dirList/' + kindId,
+                                    async: false,
+                                    type: "get",
+                                    success: function (data) {
+                                        var dirList = data.data;
+                                        for (var i = 0; i < dirList.length; i++) {
+                                            $("#kindDirId").append("<option value='" + dirList[i].kindDirId + "'>" + dirList[i].dirName + "</option>")
+                                        }
+                                        $('#id').val(obj.data.id)
+                                        $('#kindName').val(kindId)
+                                        $('#kindDirId').val(obj.data.kindDirId)
+                                        $('#method2').val(obj.data.method)
+                                        $('#tag').val(obj.data.tag)
+                                        $('#name').val(obj.data.name)
+                                        $('#params').val(obj.data.params)
+                                        $('#randKey').val(obj.data.randKey)
+                                        $('#beforeSql').val(obj.data.beforeSql)
+                                        $('#assertion').val(obj.data.assertion)
+                                        $('#afterDBCheck').val(obj.data.afterDBCheck)
+                                        $('#afterSql').val(obj.data.afterSql)
+                                        form.render();//菜单渲染 把内容加载进去
+                                    }
+                                });
+                            },
+                            error: function () {
+                                console.log("出错！");
+                            }
+                        });
+
+                    }
+                });
+            }else if(obj.event == 'copy'){
+                layer.open({
+                    type: 1,
+                    title: "复制用例",
+                    area: ['800px', '800px'],
+                    content: $("#copy_page"),
+                    success: function (layero, index) {
+                        $.ajax({
+                            url: "/va/kindList/0",
+                            async: false,
+                            type: "get",
+                            success: function (data) {
+                                // console.log('aaaa',data)
+                                var kindlist = data.data;
+                                for (var i = 0; i < kindlist.length; i++) {
+                                    $("#kindName3").append("<option value='" + kindlist[i].kindId + "'>" + kindlist[i].kindName + "</option>")
+                                }
+                                form.render();//菜单渲染 把内容加载进去
+                                var kindId = parseInt(obj.data.kindDirId/100)
+                                $.ajax({
+                                    url: '/va/dirList/' + kindId,
+                                    async: false,
+                                    type: "get",
+                                    success: function (data) {
+                                        var dirList = data.data;
+                                        for (var i = 0; i < dirList.length; i++) {
+                                            $("#kindDirId3").append("<option value='" + dirList[i].kindDirId + "'>" + dirList[i].dirName + "</option>")
+                                        }
+                                        $('#id3').val(obj.data.id)
+                                        $('#kindName3').val(kindId)
+                                        $('#kindDirId3').val(obj.data.kindDirId)
+                                        $('#method3').val(obj.data.method)
+                                        $('#tag3').val(obj.data.tag)
+                                        $('#name3').val(obj.data.name)
+                                        $('#params3').val(obj.data.params)
+                                        $('#randKey3').val(obj.data.randKey)
+                                        $('#beforeSql3').val(obj.data.beforeSql)
+                                        $('#assertion3').val(obj.data.assertion)
+                                        $('#afterDBCheck3').val(obj.data.afterDBCheck)
+                                        $('#afterSql3').val(obj.data.afterSql)
+                                        form.render();//菜单渲染 把内容加载进去
+                                    }
+                                });
+                            },
+                            error: function () {
+                                console.log("出错！");
+                            }
+                        });
+
+                    }
+                });
+            }
+        });
+
+        //表单提交
+        form.on('submit(save)', function(data){
+            // console.log("修改的数据："+ JSON.stringify(data.field)) //当前容器的全部表单字段，名值对形式：{name: value}
+            var singleCase = {
+                "id":data.field.id,
+                "kindDirId":data.field.kindDirId,
+                "method":data.field.method,
+                "tag":data.field.tag,
+                "name":data.field.name,
+                "params":data.field.params,
+                "randKey":data.field.randKey,
+                "beforeSql":data.field.beforeSql,
+                "assertion":data.field.assertion,
+                "afterDBCheck":data.field.afterDBCheck,
+                "afterSql":data.field.afterSql
+            }
+            $.ajax({
+                url:"/va/updateSingleCase2",
+                type:"post",
+                dataType:'json',
+                contentType:"application/json",
+                data: JSON.stringify(singleCase),
+                success:function(res){
+                    // layer.close(loader);
+                    if(res.code==0){
+                        layer.msg(res.msg);
+                        // location.href="/singleCaseList.html";
+                    }
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+        //表单提交
+        form.on('submit(copy)', function(data){
+            // console.log("修改的数据："+ JSON.stringify(data.field)) //当前容器的全部表单字段，名值对形式：{name: value}
+            var singleCase = {
+                // "id":data.field.id,
+                "kindDirId":data.field.kindDirId,
+                "method":data.field.method,
+                "tag":data.field.tag,
+                "name":data.field.name,
+                "params":data.field.params,
+                "randKey":data.field.randKey,
+                "beforeSql":data.field.beforeSql,
+                "assertion":data.field.assertion,
+                "afterDBCheck":data.field.afterDBCheck,
+                "afterSql":data.field.afterSql
+            }
+            $.ajax({
+                url:"/va/copySingleCase",
+                type:"post",
+                dataType:'json',
+                contentType:"application/json",
+                data: JSON.stringify(singleCase),
+                success:function(res){
+                    console.log("res======>res.code:"+res.code+",res.msg:"+res.msg);
+                    // layer.close(loader);
+                    if(res.code==0){
+                        layer.msg(res.msg);
+                        // location.href="/singleCaseList.html";
+                    }
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+        // window.edit = function(obj){
+        //     layer.open({
+        //         type: 2,
+        //         title: '修改',
+        //         shade: 0.1,
+        //         area: ['1000px', '1000px'],
+        //         content: 'singleCaseAdd.html',
+        //
+        //     });
+        // }
+
+        //监听弹出框表单提交，massage是修改界面的表单数据'submit(demo11),是修改按钮的绑定
+        function setFormValue(data){
+            window.onload = function () {
+                document.getElementsByName('tag').innerHtml = 'aa'
+            }
+
+            // console.log($("#tag"));
+            // $("#tag").val(data.tag);
+            // form.render();
+            // form.on('submi
+            // t(demo11)', function(massage) {
+            //     $.ajax({
+            //         url:'/updateCollectorAndConfig',
+            //         type:'POST',
+            //         data:{tag:data.tag,},
+            //         success:function (msg) {
+            //             var returnCode = msg.returnCode;//取得返回数据（Sting类型的字符串）的信息进行取值判断
+            //             if(returnCode==200){
+            //                 layer.closeAll('loading');
+            //                 layer.load(2);
+            //                 layer.msg("修改成功", {icon: 6});
+            //                 setTimeout(function(){
+            //                     obj.update({
+            //                         tag:massage.field.tag,
+            //                     });//修改成功修改表格数据不进行跳转
+            //                     layer.closeAll();//关闭所有的弹出层
+            //                 }, 1000);
+            //             }else{
+            //                 layer.msg("修改失败", {icon: 5});
+            //             }
+            //         }
+            //     })
+            // })
+
+        }
+
+
+        //编辑行数据
+        layui.use('table', function(){
+            var table = layui.table;
+
+            //监听单元格编辑
+            table.on('edit(dataTable)', function(obj){
+                var value = obj.value //得到修改后的值
+                    ,data = obj.data //得到所在行所有键值
+                    ,field = obj.field; //得到字段
+                layer.msg('[ID: '+ data.id +'] ' + field + ' 字段更改为：'+ value);
+
+                $.ajax({
+                    url: "/va/updateSingleCase",
+                    type: "post",
+                    data: {
+                        id: obj.data.id,
+                        field:field,
+                        value:value
+                    },
+                    success: function (result) {
+                        if(result.code==0){
+                            var currpage = $('.layui-laypage-em').next().text();
+                            table.reload('dataReload', {
+                                page: {
+                                    curr: currpage
+                                }
+                            });
+                        }
+                    }
+                });
+
+            });
+        });
+    });
+
+</script>
+</body>
+</html>
+

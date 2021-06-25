@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<!--弹窗详情-->
+<form class="layui-form" id="deatil_window" style="display:none;" >
+    <br>
+    <!--        <div class="layui-form-mid layui-word-aux">辅助文字</div>-->
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">请求头:</label>
+        <div class="layui-input-block">
+            <input type="text" name="header" id="heder" readonly   placeholder="无"  class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">请求参数:</label>
+        <div class="layui-input-block">
+            <textarea type="text" name="parameters" id="parameters" readonly   placeholder="无" class="layui-textarea" ></textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">参数示例:</label>
+        <div class="layui-input-block">
+            <textarea type="text" name="params" id="params" readonly   placeholder="无" class="layui-textarea"></textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">响应结果:</label>
+        <div class="layui-input-block">
+            <textarea type="text" name="responses" id="responses" readonly   placeholder="无" class="layui-textarea"></textarea>
+        </div>
+    </div>
+</form>
+
+<!--justify-content: space-between;-->
+<div style="display: flex;margin-top: 10px;margin-left: 10px">
+
+<form class="layui-form layui-form-pane" action="">
+        <div class="layui-form-item" >
+            <div class="layui-inline">
+                <label class="layui-form-label">模块:</label>
+                <div class="layui-inline">
+                    <select id="kind" name="kind" lay-search>
+                        <option value="0">ALL</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-inline" style="float: right">
+                <label class="layui-form-label">接口地址:</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="apiname" id="apiname" placeholder="请输入接口地址" class="layui-input" >
+                </div>
+            </div>
+
+            <div class="layui-inline" style="float:right;">
+                <label class="layui-form-label">接口状态:</label>
+                <div class="layui-inline" style="width: 250px">
+                    <!--                        接口状态：-1-禁用 0-无更新  1-新增  2-请求参数变更  3-响应结果变更  4-请求参数和响应结果都变更-->
+                    <select id="apiStatus" name="apiStatus" lay-filter="apiStatus" lay-search>
+                        <option value="9">请选择状态</option>
+                        <option value="-1">禁用</option>
+                        <option value="0">无更新</option>
+                        <option value="1">新增</option>
+                        <option value="2">请求参数变更</option>
+                        <option value="3">响应结果变更</option>
+                        <option value="4">请求参数和响应结果都变更</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+
+
+</form>
+
+    <div class="layui-inline" style="margin-right: 20px">
+        <button  id="search_btn" class="layui-btn layui-btn-normal"><i class="layui-icon"></i> 搜 索</button>
+    </div>
+    <div class="layui-inline" >
+        <button  id="read_swagger" class="layui-btn layui-btn-danger layui-btn-normal">一键同步</button>
+    </div>
+</div>
+
+<div style="margin-left: 10px;margin-right: 10px;">
+    <table class="layui-show" id="swaggerTable" lay-filter="swaggerTable" style="width: 80%;"></table>
+
+</div>
+
+<script type="text/html" id="barDemo">
+<!--    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="detail">详情</a>-->
+    {{#  if(d.status !== -1 ){ }}
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="ban">禁用</a>
+    {{#  } }}  
+    {{#  if(d.status === -1 ){ }}
+         <a class="layui-btn  layui-btn-xs" lay-event="on">启用</a>
+    {{#  } }}
+</script>
+
+<script type="text/html" id="status">
+    {{#  if(d.status === -1 ){ }}
+         <p>禁用</p>
+    {{#  } }}
+    {{#  if(d.status === 0 ){ }}
+         <p>无更新</p>
+    {{#  } }}  
+    {{#  if(d.status === 1 ){ }}
+         <p>新增</p>
+    {{#  } }}  
+    {{#  if(d.status === 2 ){ }}
+         <p>参数变更</p>
+    {{#  } }}  
+    {{#  if(d.status === 3 ){ }}
+         <p>结果变更</p>
+    {{#  } }}
+    {{#  if(d.status === 4 ){ }}
+         <p>参数&结果变更</p>
+    {{#  } }} 
+</script>
+
+<script src="/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['element', 'table', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            form = layui.form,
+            table = layui.table;
+
+            table.render({
+                elem: "#swaggerTable",
+                url: '/va/swaggerList?kind='+ $("#kind").val()+"&name="+$("#apiname").val()+"&status="+$("#apiStatus").val(),
+                cols: [
+                [
+                    {field: 'id', title: 'ID', width: 100, sort: true}
+                    ,{field: 'kind', title: '模块id', minWidth: 10, hide:true}
+                    ,{field: 'kindName', title: '模块', minWidth: 100}
+                    ,{field: 'tag', title: '接口描述', minWidth: 300}
+                    ,{field: 'method', title: '请求方式', width: 100}
+                    ,{field: 'name', title: '接口地址', width: 300}
+                    ,{field: 'status', title: '状态', width: 200, sort: true, templet:"#status"}
+                    ,{field: 'updateTime', title: '更新时间', width: 180, sort: true}
+                    ,{field: 'params', title: '示例', minWidth: 300}
+                    ,{field: 'header', title: '请求头', minWidth: 150}
+                    ,{field: 'parameters', title: '请求参数', minWidth: 300}
+                    ,{field: 'responses', title: '返回参数', minWidth: 300}
+
+                    ,{fixed: 'right', title: '操作栏', toolbar: '#barDemo', width: 100}
+            ]
+            ]
+                ,page:true
+                ,limit:10
+                // ,skin:"line"
+                ,id:'swaggerReload'
+        });
+
+        //初始化数据
+        $.ajax({
+            url:"/va/kindList/0",
+            async:false,
+            type:"get",
+            success:function(data){
+                var kindlist = data.data;
+                for(var i=0;i<kindlist.length;i++){
+                    $("#kind").append("<option value='"+kindlist[i].kindId+"'>"+kindlist[i].kindName+"</option>")
+                }
+                $("#kind").val(0);
+                form.render();//菜单渲染 把内容加载进去
+            },
+            error:function(){
+                console.log("出错！");
+            }
+        });
+
+        //监听工具条
+        table.on('tool(swaggerTable)', function(obj){
+            if(obj.event === 'ban'){
+                let loader = layer.load();
+                $.ajax({
+                    url: "/va/editSwagger",
+                    type: "post",
+                    data: {
+                        id: obj.data.id,
+                        status: -1,},
+                    success: function (result) {
+                        layer.close(loader);
+                        if(result.code==0){
+                            let currpage = $('.layui-laypage-em').next().text();
+                            table.reload('swaggerReload', {
+                                page: {
+                                    curr: currpage
+                                },
+                                limit:10
+                            });
+                        }
+                        layer.msg("禁用成功");
+                    }
+                });
+            } else if(obj.event === 'on'){
+                let loader = layer.load();
+                $.ajax({
+                    url: "/va/editSwagger",
+                    type: "post",
+                    data: {
+                        id: obj.data.id,
+                        status: 0,
+                    },
+                    success: function (result) {
+                        layer.close(loader);
+                        if(result.code==0){
+                            let currpage = $('.layui-laypage-em').next().text();
+                            table.reload('swaggerReload', {
+                                page: {
+                                    curr: currpage
+                                },
+                                limit:10
+                            });                        }
+                            layer.msg("启用成功");
+                    }
+                });
+            }else if(obj.event === 'detail'){
+                // var id = obj.data.id;
+                // layer.open({
+                //     type:1,
+                //     area:['700px','400px'],
+                //     title: '添加账号'
+                //     ,content: $("#deatil_window"),
+                //     shade:0.25,
+                //     btn: []
+                // });
+            }
+        });
+
+        $('#search_btn').on("click", function () {
+            table.reload("swaggerReload", {
+                method:"get",
+                url: '/va/swaggerList?kind='+ $("#kind").val()+"&name="+$("#apiname").val()+"&status="+$("#apiStatus").val(),
+                page:1,
+                limit:10
+            })
+        })
+
+        $('#read_swagger').on("click", function () {
+            let loader = layer.open({type:3, content:"<p style='width: 200px' >接口同步更新中...<p>"});
+            $.ajax({
+                url: "/va/synSwagger?kindId="+$("#kind").val(),
+                type: "get",
+                data: {},
+                success: function (result) {
+                    layer.close(loader);
+                    if(result.code==0){
+                        //当前页面刷新
+                        let currpage = $('.layui-laypage-em').next().text();
+                        table.reload('swaggerReload', {
+                            page: {
+                                curr: currpage
+                            },
+                            limit:10
+                        });
+                    }
+                    layer.msg("同步完成...");
+                }
+            });
+            table.reload("swaggerReload", {
+                method:"get",
+                url: '/va/swaggerList?kind='+ $("#kind").val()+"&name="+$("#apiname").val()+"&status="+$("#apiStatus").val(),
+                page:1,
+                limit:10
+            })
+        })
+
+
+        $('#search .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+    });
+
+</script>
+
+</body>
+</html>
+

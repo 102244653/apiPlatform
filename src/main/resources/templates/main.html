@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8">
+	<title>第一个 ECharts 实例</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+
+	<link rel="stylesheet" href="layui/css/layui.css"  media="all">
+	<!-- 引入 echarts.js -->
+	<script src="https://cdn.staticfile.org/echarts/5.1.1/echarts.min.js"></script>
+	<script src="local/jquery.min.js"></script>
+
+</head>
+<body>
+<div style="height: 800px;width: 100%;">
+	<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+	<div style="width: 800px;height:20px;margin-top: 10px;text-align: center">
+		<span style="color: #0C0C0C;size: A3">流程用例执行结果统计</span>
+	</div>
+	<div style="margin-left: 1250px;margin-top: -20px">
+		<span style="color: #0C0C0C;size: A3">单接口用例执行结果统计</span>
+	</div>
+	<div id="flow" style="background-color: lightcyan; width: 800px;height:400px;margin-top:5px;margin-left: 20px" ></div>
+	<div id="single" style="float:right;background-color: lightcyan; width: 800px;height:400px;margin-right: 20px;margin-top: -400px" ></div>
+
+</div>
+<script src="layui/layui.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+
+	// 基于准备好的dom，初始化echarts实例
+	var myChart0 = echarts.init(document.getElementById('flow'));
+
+	let option = {
+		color:['#00FF00', '#FF5722'],
+		legend: {},
+		tooltip: {
+			trigger: 'axis',
+			showContent: false
+		},
+		dataset: {
+			source: []
+		},
+		xAxis: {type: 'category'},
+		yAxis: {gridIndex: 0},
+		grid: {top: '55%'},
+		series: [
+			{type: 'line', smooth: true, seriesLayoutBy: 'row', emphasis: {focus: 'series'}},
+			{type: 'line', smooth: true, seriesLayoutBy: 'row', emphasis: {focus: 'series'}},
+			{
+				type: 'pie',
+				id: 'pie',
+				radius: '30%',
+				center: ['50%', '25%'],
+				emphasis: {focus: 'data'},
+				label: {
+					formatter: ''
+				},
+				encode: {}
+			}
+		]
+	};
+
+	//动态图
+	$.get('/va/indexFlowResult'+"?taskId=&testUser=&page=1&limit=10").done(function (result) {
+		var result = result.data;
+		let taskIds = ['product'];
+		let casePasss = ['PASS'];
+		let caseFails = ['FAIL'];
+		if(result!=null){
+			for(var i=0;i<result.length;i++){
+				taskIds.push('NO.'+result[i].id);
+				casePasss.push(result[i].casePass);
+				caseFails.push(result[i].caseFail);
+			}
+
+			option.dataset.source.push(taskIds, casePasss, caseFails);
+			option.series[2].formatter = '{b}: {@NO.'+result[0].id+'} ({d}%)';
+			option.series[2].encode = {
+				itemName: 'product',
+				value: 'NO.'+result[0].id,
+				tooltip: 'NO.'+result[0].id
+			}
+		}
+		myChart0.setOption(option);
+
+	});
+
+	myChart0.on('updateAxisPointer', function (event) {
+		var xAxisInfo = event.axesInfo[0];
+		if (xAxisInfo) {
+			var dimension = xAxisInfo.value + 1;
+			myChart0.setOption({
+				series: {
+					id: 'pie',
+					label: {
+						formatter: '{b}: {@[' + dimension + ']} ({d}%)'
+					},
+					encode: {
+						value: dimension,
+						tooltip: dimension
+					}
+				}
+			});
+		}
+	});
+
+
+
+</script>
+
+<script type="text/javascript">
+
+	// 基于准备好的dom，初始化echarts实例
+	var myChart1 = echarts.init(document.getElementById('single'));
+
+	myChart1.on('updateAxisPointer', function (event) {
+		var xAxisInfo = event.axesInfo[0];
+		if (xAxisInfo) {
+			var dimension = xAxisInfo.value + 1;
+			myChart1.setOption({
+				series: {
+					id: 'pie',
+					label: {
+						formatter: '{b}: {@[' + dimension + ']} ({d}%)'
+					},
+					encode: {
+						value: dimension,
+						tooltip: dimension
+					}
+				}
+			});
+		}
+	});
+
+	//动态图
+	$.get('').done(function (data) {
+		let option = {
+			color:['#00FF00', '#FF5722'],
+			legend: {},
+			tooltip: {
+				trigger: 'axis',
+				showContent: false
+			},
+			dataset: {
+				source: [
+					['product', '1', '2', '3', '4', '5', '6', '7' , '8', '9', '10'],
+					['PASS', 56.5, 82.1, 88.7, 70.1, 53.4, 85.1, 88.7, 70.1, 53.4, 85.1],
+					['FAIL', 25.2, 37.1, 41.2, 18, 33.9, 49.1, 88.7, 70.1, 53.4, 85.1]
+				]
+			},
+			xAxis: {type: 'category'},
+			yAxis: {gridIndex: 0},
+			grid: {top: '55%'},
+			series: [
+				{type: 'line', smooth: true, seriesLayoutBy: 'row', emphasis: {focus: 'series'}},
+				{type: 'line', smooth: true, seriesLayoutBy: 'row', emphasis: {focus: 'series'}},
+				{
+					type: 'pie',
+					id: 'pie',
+					radius: '30%',
+					center: ['50%', '25%'],
+					emphasis: {focus: 'data'},
+					label: {
+						formatter: '{b}: {@1} ({d}%)'
+					},
+					encode: {
+						itemName: 'product',
+						value: '1',
+						tooltip: '1'
+					}
+				}
+			]
+		};
+		myChart1.setOption(option);
+	});
+
+</script>
+</body>
+</html>
