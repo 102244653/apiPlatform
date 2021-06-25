@@ -27,7 +27,7 @@
             --application-dev.properties        开发环境配置
             
             
-   ![Image text]:https://github.com/102244653/apiPlatform/blob/main/notes/FF130C2E-4EB0-4376-9822-068927B03AFF.png
+   ![https://github.com/102244653/apiPlatform/blob/main/notes/FF130C2E-4EB0-4376-9822-068927B03AFF.png]
    
    https://github.com/102244653/apiPlatform/blob/main/notes/A74BED50-6DC0-42D6-A7F3-B52FB81BB6C9.png
    
