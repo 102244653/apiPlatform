@@ -25,6 +25,8 @@
             --application.properties    springboot配置：修改dev/pro即可
             --application-pro.properties        正是环境配置
             --application-dev.properties        开发环境配置
+           
+![Alt text](https://github.com/chenyufeng1991/NewsClient/raw/master/Screenshots/2.png)
             
             
 
