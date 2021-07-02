@@ -31,10 +31,10 @@
 ![Alt text](https://raw.githubusercontent.com/102244653/apiPlatform/main/notes/6529111B-F3A8-45CA-B7A0-88FE798FDF35.png)
 
 # 用例列表
-![Alt text](https://raw.githubusercontent.com/102244653/apiPlatform/main/notes/54519C25-F9E1-430D-B601-E9CF2EE3E22C.png)
-
-# 场景标签
 ![Alt text](https://raw.githubusercontent.com/102244653/apiPlatform/main/notes/8630330D-B1D0-416E-9AFE-DBB4157CFAE6.png)
+
+# 用例编辑
+![Alt text](https://raw.githubusercontent.com/102244653/apiPlatform/main/notes/54519C25-F9E1-430D-B601-E9CF2EE3E22C.png)
 
 # 测试报告
 ![Alt text](https://raw.githubusercontent.com/102244653/apiPlatform/main/notes/A2127BCF-64E2-486F-80F8-8F58F661D53B.png)
