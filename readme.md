@@ -26,7 +26,7 @@
             --application-pro.properties        正是环境配置
             --application-dev.properties        开发环境配置
            
-![Alt text](https://github.com/chenyufeng1991/NewsClient/raw/master/Screenshots/2.png)
+![Alt text](https://raw.githubusercontent.com/102244653/apiPlatform/main/notes/8630330D-B1D0-416E-9AFE-DBB4157CFAE6.png)
             
             
 
